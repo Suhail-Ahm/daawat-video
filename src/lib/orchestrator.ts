@@ -4,7 +4,7 @@
  */
 
 import { db } from "./db";
-import { uploadToS3, getPresignedUploadUrl, getPresignedDownloadUrl, getS3Url } from "./s3";
+import { uploadToS3, getPresignedUploadUrl, getPresignedDownloadUrl } from "./s3";
 import { submitFaceSwapJob, waitForFaceSwap } from "./runpod";
 import { generatePersonalizedAudio, mergeAudioIntoVideo } from "./audio-pipeline";
 import fs from "fs";
@@ -29,8 +29,8 @@ export async function processVideoJob(jobId: string) {
     const swappedKey = `outputs/swapped_${jobId}.mp4`;
     const uploadUrl = await getPresignedUploadUrl(swappedKey, "video/mp4");
 
-    const sourceUrl = getS3Url(job.selfieS3Key);
-    const templateUrl = getS3Url(process.env.TEMPLATE_VIDEO_S3_KEY || "assets/template.mp4");
+    const sourceUrl = await getPresignedDownloadUrl(job.selfieS3Key);
+    const templateUrl = await getPresignedDownloadUrl(process.env.TEMPLATE_VIDEO_S3_KEY || "assets/template.mp4");
 
     const runpodJob = await submitFaceSwapJob({
       source_url: sourceUrl,
