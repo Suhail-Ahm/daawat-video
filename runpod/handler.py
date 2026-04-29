@@ -61,7 +61,7 @@ def handler(event):
         start = time.time()
 
         cmd = [
-            "python",
+            "python3",
             "facefusion.py",
             "headless-run",
             "--source-paths", source_path,
@@ -79,22 +79,35 @@ def handler(event):
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
             "--output-video-quality", "90",
+            "--skip-download",
         ]
 
-        result = subprocess.run(
+        print(f"  CMD: {' '.join(cmd)}")
+
+        # Stream output live so RunPod logs capture FaceFusion progress
+        process = subprocess.Popen(
             cmd,
             cwd=FACEFUSION_DIR,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
             text=True,
-            timeout=600,
+            bufsize=1,
         )
+
+        output_lines = []
+        for line in process.stdout:
+            line = line.rstrip()
+            print(f"  [FF] {line}")
+            output_lines.append(line)
+
+        process.wait(timeout=600)
 
         elapsed = time.time() - start
 
-        if result.returncode != 0:
+        if process.returncode != 0:
             return {
                 "status": "error",
-                "error": result.stderr[-500:] if result.stderr else "Unknown error",
+                "error": "\n".join(output_lines[-20:]),
                 "elapsed": elapsed,
             }
 
