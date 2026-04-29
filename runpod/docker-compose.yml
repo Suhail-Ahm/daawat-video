@@ -1,0 +1,16 @@
+services:
+  facefusion:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./handler.py:/app/handler.py
+      - ./test_input.json:/app/test_input.json
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: python3 -u /app/handler.py

@@ -1,0 +1,7 @@
+{
+  "input": {
+    "source_url": "https://daawat-video.s3.ap-south-1.amazonaws.com/test/selfie.png",
+    "target_url": "https://daawat-video.s3.ap-south-1.amazonaws.com/assets/template.mp4",
+    "gender": "female"
+  }
+}
