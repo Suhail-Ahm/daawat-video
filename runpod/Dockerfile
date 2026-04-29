@@ -1,19 +1,19 @@
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+FROM runpod/base:0.6.2-cuda12.1.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
 # System dependencies
 RUN apt-get update && apt-get install -y \
-    python3 python3-pip git ffmpeg curl wget \
+    ffmpeg curl wget \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Install runpod FIRST to verify handler works
+# Install Python deps first
 RUN pip3 install --no-cache-dir runpod requests
 
-# Clone FaceFusion (pin to a known stable version)
+# Clone FaceFusion
 RUN git clone https://github.com/facefusion/facefusion /app/facefusion
 
 # Install FaceFusion dependencies
