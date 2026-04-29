@@ -61,7 +61,7 @@ def handler(event):
         start = time.time()
 
         cmd = [
-            "python3",
+            "python",
             "facefusion.py",
             "headless-run",
             "--source-paths", source_path,
