@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  selfieUrl String
+  createdAt DateTime @default(now())
+  jobs      Job[]
+}
+
+model Job {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  status          String   @default("pending")
+  runpodJobId     String?
+  selfieS3Key     String
+  swappedVideoKey String?
+  finalVideoKey   String?
+  finalVideoUrl   String?
+  errorMessage    String?
+  progress        Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
