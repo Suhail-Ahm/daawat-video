@@ -31,7 +31,7 @@ RUN python3 -m pip install --no-cache-dir --upgrade pip && \
         onnx==1.21.0 \
         opencv-python==4.13.0.92 \
         tqdm==4.67.3 \
-        scipy==1.17.1
+        scipy==1.15.3
 
 # ─── Install onnxruntime-gpu (replaces CPU version from requirements) ──
 RUN python3 -m pip install --no-cache-dir onnxruntime-gpu
