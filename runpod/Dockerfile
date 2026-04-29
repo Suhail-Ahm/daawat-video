@@ -40,16 +40,31 @@ RUN python3 -m pip install --no-cache-dir onnxruntime-gpu
 RUN python3 -m pip install --no-cache-dir --force-reinstall runpod requests
 
 # ─── Pre-download FaceFusion models at build time ──────────────────────
-# Uses FaceFusion's official force-download command (from docs).
-# This ensures correct model files for the current version.
-# --processors specifies which processor models to download.
+# First, check what FaceFusion version/CLI we have
 RUN cd /app/facefusion && \
-    python3 facefusion.py force-download \
+    echo "=== FaceFusion directory ===" && \
+    ls -la && \
+    echo "=== Checking CLI help ===" && \
+    python3 facefusion.py --help 2>&1 | head -40 || true
+
+# Download models: try force-download first, fallback to direct URLs
+RUN cd /app/facefusion && \
+    mkdir -p .assets/models && \
+    (python3 facefusion.py force-download \
         --processors face_swapper face_enhancer \
         --face-swapper-model inswapper_128 \
-        --face-enhancer-model gfpgan_1.4 && \
-    echo "Models downloaded:" && \
-    ls -lh /app/facefusion/.assets/models/ 2>/dev/null || \
+        --face-enhancer-model gfpgan_1.4 2>&1 && \
+     echo "force-download completed") || \
+    echo "force-download failed, trying direct downloads..." && \
+    if [ $(find /app/facefusion -name "*.onnx" | wc -l) -lt 2 ]; then \
+        echo "Downloading models directly..." && \
+        wget -q --show-progress -O .assets/models/inswapper_128.onnx \
+            "https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/inswapper_128.onnx" && \
+        wget -q --show-progress -O .assets/models/gfpgan_1.4.onnx \
+            "https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/gfpgan_1.4.onnx" && \
+        echo "Direct download completed"; \
+    fi && \
+    echo "=== Models present ===" && \
     find /app/facefusion -name "*.onnx" -exec ls -lh {} \;
 
 # ─── Verify ALL critical imports at build time ─────────────────────────
@@ -67,16 +82,17 @@ import scipy; print('✅ scipy OK'); \
 print('\\n🎯 All imports verified!')"
 
 # ─── Verify models were downloaded ────────────────────────────────────
-RUN python3 -c "\
-import os, glob; \
-onnx_files = glob.glob('/app/facefusion/.assets/**/*.onnx', recursive=True); \
-if not onnx_files: \
-    onnx_files = glob.glob('/app/facefusion/**/*.onnx', recursive=True); \
-assert len(onnx_files) >= 2, f'Expected 2+ models, found {len(onnx_files)}'; \
-for f in sorted(onnx_files): \
-    size = os.path.getsize(f) / 1024 / 1024; \
-    print(f'✅ {os.path.basename(f)}: {size:.1f} MB'); \
-print(f'\\n🎯 {len(onnx_files)} models present!')"
+RUN python3 <<'PYEOF'
+import os, glob
+onnx_files = glob.glob('/app/facefusion/.assets/**/*.onnx', recursive=True)
+if not onnx_files:
+    onnx_files = glob.glob('/app/facefusion/**/*.onnx', recursive=True)
+assert len(onnx_files) >= 2, f'Expected 2+ models, found {len(onnx_files)}'
+for f in sorted(onnx_files):
+    size = os.path.getsize(f) / 1024 / 1024
+    print(f'✅ {os.path.basename(f)}: {size:.1f} MB')
+print(f'\n🎯 {len(onnx_files)} models present!')
+PYEOF
 
 # ─── Copy handler ─────────────────────────────────────────────────────
 COPY handler.py /app/handler.py
