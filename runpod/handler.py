@@ -67,15 +67,26 @@ def handler(event):
             "--source-paths", source_path,
             "--target-path", target_path,
             "--output-path", output_path,
-            "--processors", "face_swapper",
+            # ── Processors: swap → enhance → restore expressions ──
+            "--processors", "face_swapper", "face_enhancer", "expression_restorer",
             "--execution-providers", "cuda",
+            # ── Face detection ──
             "--face-selector-mode", "many",
             "--face-selector-gender", gender,
-            "--face-swapper-model", "inswapper_128_fp16",
+            # ── Face swapper: inswapper + 512x pixel boost for sharp faces ──
+            "--face-swapper-model", "hyperswap_1c_256",
+            "--face-swapper-pixel-boost", "512x512",
+            # ── Face enhancer: GFPGAN 1.4 at 80% blend (natural skin, no plastic look) ──
+            "--face-enhancer-model", "gfpgan_1.4",
+            "--face-enhancer-blend", "80",
+            # ── Expression restorer: LivePortrait (preserves talking, blinking, emotions) ──
+            "--expression-restorer-model", "live_portrait",
+            # ── Execution ──
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
+            # ── Output: high quality encoding ──
             "--output-video-encoder", "libx264",
-            "--output-video-quality", "70",
+            "--output-video-quality", "85",
         ]
 
         print(f"  CMD: {' '.join(cmd)}")
