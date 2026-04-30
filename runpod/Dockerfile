@@ -1,6 +1,6 @@
 # ═══════════════════════════════════════════════════════════════════════
 # FaceFusion RunPod Serverless Worker
-# Based on: https://github.com/facefusion/facefusion-docker/Dockerfile.cuda
+# Matches: https://github.com/facefusion/facefusion-docker/Dockerfile.cuda
 # ═══════════════════════════════════════════════════════════════════════
 
 FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
@@ -9,12 +9,16 @@ ARG FACEFUSION_VERSION=3.6.1
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PIP_BREAK_SYSTEM_PACKAGES=1
 
-# ─── System dependencies ──────────────────────────────────────────────
+# ─── System deps + Python 3.12 (required by onnxruntime 1.24.4) ───────
+# Ubuntu 22.04 ships Python 3.10, but FaceFusion 3.6.1 needs ≥3.11.
+# Install Python 3.12 from deadsnakes PPA.
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.10 \
-    python-is-python3 \
-    python3-pip \
-    python3-dev \
+    software-properties-common && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
     git \
     curl \
     ffmpeg \
@@ -22,18 +26,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# ─── Clone FaceFusion (pinned version for reproducibility) ─────────────
+# ─── Make python3.12 the default python ────────────────────────────────
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1 && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py | python
+
+# ─── Clone FaceFusion (pinned version) ─────────────────────────────────
 RUN git clone https://github.com/facefusion/facefusion.git \
     --branch ${FACEFUSION_VERSION} --single-branch /app/facefusion
 
 WORKDIR /app/facefusion
 
-# ─── Install FaceFusion deps from requirements.txt ─────────────────────
-# install.py silently fails in this environment (completes in 16s without
-# installing anything). So we install deps directly from requirements.txt
-# then swap onnxruntime → onnxruntime-gpu for CUDA support.
+# ─── Install FaceFusion deps ──────────────────────────────────────────
+# Install from requirements.txt, skip onnxruntime (CPU), install GPU version
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt && \
+    pip uninstall -y onnxruntime && \
     pip install --no-cache-dir onnxruntime-gpu && \
     pip install --no-cache-dir runpod requests
 
