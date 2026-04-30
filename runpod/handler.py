@@ -11,7 +11,7 @@ import os
 import time
 import shutil
 
-FACEFUSION_DIR = "/app/facefusion"
+FACEFUSION_DIR = "/app"
 
 
 def download_file(url: str, path: str):
@@ -67,15 +67,11 @@ def handler(event):
             "--source-paths", source_path,
             "--target-path", target_path,
             "--output-path", output_path,
-            "--processors", "face_swapper", "face_enhancer",
+            "--processors", "face_swapper",
             "--execution-providers", "cuda",
             "--face-selector-mode", "many",
             "--face-selector-gender", gender,
-            "--face-swapper-model", "inswapper_128",
-            "--face-swapper-pixel-boost", "512x512",
-            "--face-swapper-weight", "1.0",
-            "--face-enhancer-model", "gfpgan_1.4",
-            "--face-enhancer-blend", "80",
+            "--face-swapper-model", "inswapper_128_fp16",
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
             "--output-video-quality", "90",
