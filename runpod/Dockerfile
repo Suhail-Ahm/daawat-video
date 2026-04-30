@@ -3,8 +3,7 @@
 # ═══════════════════════════════════════════════════════════════════════
 
 # RunPod's official PyTorch image with Python 3.11 + CUDA 12.4
-# Using non-devel variant to avoid nvidia-container-runtime OCI errors
-FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-ubuntu22.04
+FROM runpod/pytorch:2.4.0-py3.11-cuda12.4.1-devel-ubuntu22.04
 
 ARG FACEFUSION_VERSION=3.6.1
 
