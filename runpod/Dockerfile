@@ -33,31 +33,41 @@ import onnxruntime; print('✅ onnxruntime', onnxruntime.__version__); \
 print('   Providers:', onnxruntime.get_available_providers()); \
 print('🎯 All imports OK!')"
 
-# ─── Pre-download ONLY essential face-swap models ─────────────────────
-# Instead of force-download (downloads 30+ models, causes build timeout),
-# we manually download only the models needed for face swapping.
-# Models are spread across different release tags on GitHub.
+# ─── Pre-download ALL models FaceFusion needs at runtime ──────────────
+# Complete list derived from actual worker logs (every model FF downloaded).
+# This eliminates ~50s cold-start delay from runtime downloads.
 
 RUN mkdir -p /app/.assets/models
 
 # GitHub base URL
 ENV GH=https://github.com/facefusion/facefusion-assets/releases/download
 
-# Download all essential models in a single layer (saves build time)
-RUN curl -fSL -o /app/.assets/models/retinaface_10g.onnx      ${GH}/models-3.0.0/retinaface_10g.onnx && \
-    curl -fSL -o /app/.assets/models/2dfan4.onnx               ${GH}/models-3.0.0/2dfan4.onnx && \
-    curl -fSL -o /app/.assets/models/peppa_wutz.onnx            ${GH}/models-3.0.0/peppa_wutz.onnx && \
+# models-3.0.0 models
+RUN curl -fSL -o /app/.assets/models/2dfan4.onnx               ${GH}/models-3.0.0/2dfan4.onnx && \
     curl -fSL -o /app/.assets/models/arcface_w600k_r50.onnx     ${GH}/models-3.0.0/arcface_w600k_r50.onnx && \
     curl -fSL -o /app/.assets/models/inswapper_128_fp16.onnx    ${GH}/models-3.0.0/inswapper_128_fp16.onnx && \
-    curl -fSL -o /app/.assets/models/xseg_1.onnx                ${GH}/models-3.1.0/xseg_1.onnx && \
-    curl -fSL -o /app/.assets/models/nsfw_1.onnx                ${GH}/models-3.3.0/nsfw_1.onnx && \
-    echo "✅ All models downloaded"
+    curl -fSL -o /app/.assets/models/fairface.onnx              ${GH}/models-3.0.0/fairface.onnx && \
+    curl -fSL -o /app/.assets/models/yoloface_8n.onnx           ${GH}/models-3.0.0/yoloface_8n.onnx && \
+    curl -fSL -o /app/.assets/models/fan_68_5.onnx              ${GH}/models-3.0.0/fan_68_5.onnx && \
+    curl -fSL -o /app/.assets/models/bisenet_resnet_34.onnx     ${GH}/models-3.0.0/bisenet_resnet_34.onnx && \
+    curl -fSL -o /app/.assets/models/kim_vocal_2.onnx           ${GH}/models-3.0.0/kim_vocal_2.onnx && \
+    echo "✅ models-3.0.0 done"
+
+# models-3.1.0 models
+RUN curl -fSL -o /app/.assets/models/xseg_1.onnx               ${GH}/models-3.1.0/xseg_1.onnx && \
+    echo "✅ models-3.1.0 done"
+
+# models-3.3.0 models
+RUN curl -fSL -o /app/.assets/models/nsfw_1.onnx               ${GH}/models-3.3.0/nsfw_1.onnx && \
+    curl -fSL -o /app/.assets/models/nsfw_2.onnx               ${GH}/models-3.3.0/nsfw_2.onnx && \
+    curl -fSL -o /app/.assets/models/nsfw_3.onnx               ${GH}/models-3.3.0/nsfw_3.onnx && \
+    echo "✅ models-3.3.0 done"
 
 # ─── Verify models ───────────────────────────────────────────────────
 RUN python -c "\
 import os, glob; \
 files = glob.glob('/app/.assets/models/*.onnx'); \
-assert len(files) >= 5, f'Expected 5+ models, found {len(files)}'; \
+assert len(files) >= 12, f'Expected 12+ models, found {len(files)}'; \
 total = 0; \
 [( \
     print(f'✅ {os.path.basename(f)}: {os.path.getsize(f)/1024/1024:.1f}MB'), \
