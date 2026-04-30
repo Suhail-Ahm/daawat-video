@@ -49,6 +49,6 @@ assert len(files) >= 2, f'Expected 2+ models, found {len(files)}'; \
 print(f'🎯 {len(files)} models OK!')"
 
 # ─── Copy handler ────────────────────────────────────────────────────
-COPY handler.py /app/handler.py
+COPY runpod/handler.py /app/handler.py
 
 CMD ["python", "-u", "/app/handler.py"]
