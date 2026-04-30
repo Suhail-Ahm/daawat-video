@@ -56,6 +56,34 @@ def handler(event):
         download_file(source_url, source_path)
         download_file(target_url, target_path)
 
+        # Pre-flight: verify models exist
+        print("=== MODEL PRE-FLIGHT CHECK ===")
+        models_dir = os.path.join(FACEFUSION_DIR, ".assets", "models")
+        required_models = [
+            "hyperswap_1c_256.onnx",
+            "gfpgan_1.4.onnx",
+            "live_portrait_feature_extractor.onnx",
+            "live_portrait_motion_extractor.onnx",
+            "live_portrait_generator.onnx",
+            "yoloface_8n.onnx",
+            "2dfan4.onnx",
+            "arcface_w600k_r50.onnx",
+        ]
+        for model in required_models:
+            path = os.path.join(models_dir, model)
+            if os.path.exists(path):
+                size_mb = os.path.getsize(path) / 1024 / 1024
+                print(f"  ✅ {model}: {size_mb:.1f} MB")
+            else:
+                print(f"  ❌ MISSING: {model}")
+        # List all models actually present
+        if os.path.isdir(models_dir):
+            all_models = sorted(os.listdir(models_dir))
+            print(f"  Total files in models dir: {len(all_models)}")
+        else:
+            print(f"  ❌ Models directory does not exist: {models_dir}")
+        print("=== END PRE-FLIGHT ===")
+
         # Run FaceFusion
         print("Running FaceFusion...")
         start = time.time()
@@ -73,7 +101,7 @@ def handler(event):
             # ── Face detection ──
             "--face-selector-mode", "many",
             "--face-selector-gender", gender,
-            # ── Face swapper: inswapper + 512x pixel boost for sharp faces ──
+            # ── Face swapper: hyperswap + 512x pixel boost for sharp faces ──
             "--face-swapper-model", "hyperswap_1c_256",
             "--face-swapper-pixel-boost", "512x512",
             # ── Face enhancer: GFPGAN 1.4 at 80% blend (natural skin, no plastic look) ──
@@ -87,6 +115,8 @@ def handler(event):
             # ── Output: high quality encoding ──
             "--output-video-encoder", "libx264",
             "--output-video-quality", "85",
+            # ── Diagnostics ──
+            "--log-level", "debug",
         ]
 
         print(f"  CMD: {' '.join(cmd)}")
