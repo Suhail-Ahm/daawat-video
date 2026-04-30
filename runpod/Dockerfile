@@ -36,40 +36,23 @@ print('🎯 All imports OK!')"
 
 # ─── Pre-download ONLY essential face-swap models ─────────────────────
 # Instead of force-download (downloads 30+ models, causes build timeout),
-# we manually download only the 6 models needed for face swapping.
-# Source: https://github.com/facefusion/facefusion-assets
+# we manually download only the models needed for face swapping.
+# Models are spread across different release tags on GitHub.
 
-# Create the model directories
 RUN mkdir -p /app/.assets/models
 
-# Base URL for facefusion-assets on GitHub
-ENV ASSETS_URL=https://github.com/facefusion/facefusion-assets/releases/download/models-3.6.0
+# GitHub base URL
+ENV GH=https://github.com/facefusion/facefusion-assets/releases/download
 
-# 1. Face detector: retinaface (16MB)
-RUN wget -q --show-progress -O /app/.assets/models/retinaface_10g.onnx \
-    ${ASSETS_URL}/retinaface_10g.onnx
-
-# 2. Face landmarker: 2dfan4 (93MB) + peppa_wutz (13MB)
-RUN wget -q --show-progress -O /app/.assets/models/2dfan4.onnx \
-    ${ASSETS_URL}/2dfan4.onnx && \
-    wget -q --show-progress -O /app/.assets/models/peppa_wutz.onnx \
-    ${ASSETS_URL}/peppa_wutz.onnx
-
-# 3. Face recognizer: arcface (166MB)
-RUN wget -q --show-progress -O /app/.assets/models/arcface_w600k_r50.onnx \
-    ${ASSETS_URL}/arcface_w600k_r50.onnx
-
-# 4. Face masker: xseg (67MB)
-RUN wget -q --show-progress -O /app/.assets/models/xseg_1.onnx \
-    ${ASSETS_URL}/xseg_1.onnx
-
-# 5. Face swapper: inswapper_128_fp16 (the core swap model, ~200MB)
-RUN wget -q --show-progress -O /app/.assets/models/inswapper_128_fp16.onnx \
-    ${ASSETS_URL}/inswapper_128_fp16.onnx
-
-# 6. NSFW filter (required by FaceFusion to start)
-RUN wget -q --show-progress -O /app/.assets/models/nsfw_1.onnx \
-    ${ASSETS_URL}/nsfw_1.onnx
+# Download all essential models in a single layer (saves build time)
+RUN curl -fSL -o /app/.assets/models/retinaface_10g.onnx      ${GH}/models-3.0.0/retinaface_10g.onnx && \
+    curl -fSL -o /app/.assets/models/2dfan4.onnx               ${GH}/models-3.0.0/2dfan4.onnx && \
+    curl -fSL -o /app/.assets/models/peppa_wutz.onnx            ${GH}/models-3.0.0/peppa_wutz.onnx && \
+    curl -fSL -o /app/.assets/models/arcface_w600k_r50.onnx     ${GH}/models-3.0.0/arcface_w600k_r50.onnx && \
+    curl -fSL -o /app/.assets/models/inswapper_128_fp16.onnx    ${GH}/models-3.0.0/inswapper_128_fp16.onnx && \
+    curl -fSL -o /app/.assets/models/xseg_1.onnx                ${GH}/models-3.1.0/xseg_1.onnx && \
+    curl -fSL -o /app/.assets/models/nsfw_1.onnx                ${GH}/models-3.3.0/nsfw_1.onnx && \
+    echo "✅ All models downloaded"
 
 # ─── Verify models ───────────────────────────────────────────────────
 RUN python -c "\
