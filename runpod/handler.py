@@ -79,7 +79,6 @@ def handler(event):
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
             "--output-video-quality", "90",
-            "--skip-download",
         ]
 
         print(f"  CMD: {' '.join(cmd)}")

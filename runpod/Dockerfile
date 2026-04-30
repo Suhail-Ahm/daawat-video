@@ -10,7 +10,7 @@ ARG FACEFUSION_VERSION=3.6.1
 
 # ─── System deps ──────────────────────────────────────────────────────
 RUN apt-get update && apt-get install -y \
-    ffmpeg libgl1 libglib2.0-0 \
+    ffmpeg libgl1 libglib2.0-0 libcudnn9-cuda-12 \
     && rm -rf /var/lib/apt/lists/*
 
 # ─── Clone FaceFusion (pinned version) ────────────────────────────────
