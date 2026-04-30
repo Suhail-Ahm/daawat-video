@@ -1,5 +1,7 @@
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Upload } from "@aws-sdk/lib-storage";
+import fs from "fs";
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || "ap-south-1",
@@ -50,6 +52,36 @@ export async function getPresignedDownloadUrl(key: string, expiresIn = 86400) {
     new GetObjectCommand({ Bucket: BUCKET, Key: key }),
     { expiresIn }
   );
+}
+
+/**
+ * Stream upload a file from disk using multipart upload
+ * - Streams from disk (no RAM buffering)
+ * - Auto multipart with parallel chunk uploads
+ * - 5MB chunk size, 4 concurrent uploads
+ */
+export async function streamUploadToS3(
+  key: string,
+  filePath: string,
+  contentType: string
+): Promise<string> {
+  const fileStream = fs.createReadStream(filePath);
+
+  const upload = new Upload({
+    client: s3,
+    params: {
+      Bucket: BUCKET,
+      Key: key,
+      Body: fileStream,
+      ContentType: contentType,
+    },
+    queueSize: 4,        // 4 concurrent part uploads
+    partSize: 5 * 1024 * 1024, // 5MB chunks
+    leavePartsOnError: false,
+  });
+
+  await upload.done();
+  return `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 }
 
 /**

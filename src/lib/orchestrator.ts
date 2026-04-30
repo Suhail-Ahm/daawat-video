@@ -4,12 +4,14 @@
  */
 
 import { db } from "./db";
-import { uploadToS3, getPresignedUploadUrl, getPresignedDownloadUrl } from "./s3";
+import { streamUploadToS3, getPresignedUploadUrl, getPresignedDownloadUrl } from "./s3";
 import { submitFaceSwapJob, waitForFaceSwap } from "./runpod";
 import { generatePersonalizedAudio, mergeAudioIntoVideo } from "./audio-pipeline";
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { Readable } from "stream";
+import { pipeline } from "stream/promises";
 
 interface StepTiming {
   step: string;
@@ -111,24 +113,32 @@ export async function processVideoJob(jobId: string) {
     await updateJob(jobId, { status: "merging", progress: 85, stepTimings: timings });
     console.log(`\n🔀 Step 3: Merging face-swapped video with personalized audio`);
 
-    // Download face-swapped video from S3
+    // Download face-swapped video from S3 (streaming to disk, no RAM buffering)
     const swappedVideoPath = path.join(workDir, "swapped.mp4");
     const swappedUrl = await getPresignedDownloadUrl(swappedKey);
+    const dlStart = Date.now();
     const videoRes = await fetch(swappedUrl);
-    if (!videoRes.ok) throw new Error("Failed to download face-swapped video from S3");
-    fs.writeFileSync(swappedVideoPath, Buffer.from(await videoRes.arrayBuffer()));
+    if (!videoRes.ok || !videoRes.body) throw new Error("Failed to download face-swapped video from S3");
+    await pipeline(
+      Readable.fromWeb(videoRes.body as import("stream/web").ReadableStream),
+      fs.createWriteStream(swappedVideoPath)
+    );
+    console.log(`  ▸ S3 download: ${((Date.now() - dlStart) / 1000).toFixed(1)}s`);
 
-    // Merge audio into video
+    // Merge audio into video (FFmpeg -c:v copy — no re-encoding)
     const finalVideoPath = path.join(workDir, "final.mp4");
+    const mergeStart = Date.now();
     await mergeAudioIntoVideo(swappedVideoPath, finalAudioPath, finalVideoPath);
+    console.log(`  ▸ FFmpeg merge: ${((Date.now() - mergeStart) / 1000).toFixed(1)}s`);
 
-    // Upload final video to S3
+    // Upload final video to S3 (streaming multipart) + generate presigned URL in parallel
     const finalKey = `outputs/final_${jobId}.mp4`;
-    const finalBuffer = fs.readFileSync(finalVideoPath);
-    await uploadToS3(finalKey, finalBuffer, "video/mp4");
-
-    // Generate public download URL (24h expiry)
-    const downloadUrl = await getPresignedDownloadUrl(finalKey);
+    const ulStart = Date.now();
+    const [, downloadUrl] = await Promise.all([
+      streamUploadToS3(finalKey, finalVideoPath, "video/mp4"),
+      getPresignedDownloadUrl(finalKey),
+    ]);
+    console.log(`  ▸ S3 upload: ${((Date.now() - ulStart) / 1000).toFixed(1)}s`);
 
     endStep(step3);
 
