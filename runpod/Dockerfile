@@ -35,17 +35,20 @@ print('   Providers:', onnxruntime.get_available_providers()); \
 print('🎯 All imports OK!')"
 
 # ─── Pre-download models (zero cold-start) ───────────────────────────
-# FaceFusion 3.6.1: force-download is a standalone command (no extra args)
-# Downloads all default models configured in facefusion.ini
-RUN python facefusion.py force-download
+# Use --download-scope lite to avoid downloading ALL 95 models (build timeout)
+# This downloads only the essential models needed for face processing
+RUN python facefusion.py force-download --download-scope lite
 
 # ─── Verify models ───────────────────────────────────────────────────
 RUN python -c "\
 import os, glob; \
-files = glob.glob('/app/.assets/**/*.onnx', recursive=True); \
-assert len(files) >= 2, f'Expected 2+ models, found {len(files)}'; \
-[print(f'✅ {os.path.basename(f)}: {os.path.getsize(f)/1024/1024:.1f}MB') for f in sorted(files)]; \
-print(f'🎯 {len(files)} models OK!')"
+files = glob.glob('/app/.assets/**/*.onnx', recursive=True) + \
+        glob.glob('/app/.assets/**/*.dfm', recursive=True) + \
+        glob.glob('/app/.assets/**/*.hash', recursive=True); \
+onnx = [f for f in files if f.endswith('.onnx')]; \
+assert len(onnx) >= 2, f'Expected 2+ models, found {len(onnx)}'; \
+[print(f'✅ {os.path.basename(f)}: {os.path.getsize(f)/1024/1024:.1f}MB') for f in sorted(onnx)]; \
+print(f'🎯 {len(onnx)} models OK!')"
 
 # ─── Copy handler ────────────────────────────────────────────────────
 COPY runpod/handler.py /app/handler.py
