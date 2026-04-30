@@ -35,10 +35,9 @@ print('   Providers:', onnxruntime.get_available_providers()); \
 print('🎯 All imports OK!')"
 
 # ─── Pre-download models (zero cold-start) ───────────────────────────
-RUN python facefusion.py force-download \
-    --processors face_swapper face_enhancer \
-    --face-swapper-model inswapper_128 \
-    --face-enhancer-model gfpgan_1.4
+# FaceFusion 3.6.1: force-download is a standalone command (no extra args)
+# Downloads all default models configured in facefusion.ini
+RUN python facefusion.py force-download
 
 # ─── Verify models ───────────────────────────────────────────────────
 RUN python -c "\
