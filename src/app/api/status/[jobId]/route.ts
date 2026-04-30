@@ -29,6 +29,9 @@ export async function GET(
     return NextResponse.json({ error: "Job not found" }, { status: 404 });
   }
 
+  // Calculate elapsed time since creation
+  const elapsedMs = Date.now() - new Date(job.createdAt).getTime();
+
   return NextResponse.json({
     jobId: job.id,
     status: job.status,
@@ -39,5 +42,7 @@ export async function GET(
     error: job.status === "error" ? job.errorMessage : null,
     createdAt: job.createdAt,
     updatedAt: job.updatedAt,
+    elapsedMs,
+    stepTimings: job.stepTimings || null,
   });
 }
