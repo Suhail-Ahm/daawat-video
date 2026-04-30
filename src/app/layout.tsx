@@ -25,12 +25,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {/* Animated background */}
-        <div className="fixed inset-0 -z-10 bg-zinc-950" />
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.08),transparent_50%)]" />
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,rgba(234,88,12,0.06),transparent_50%)]" />
+        {/* Light warm background */}
+        <div className="fixed inset-0 -z-10 bg-[#FAFAF8]" />
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(251,191,36,0.06),transparent_50%)]" />
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,rgba(234,88,12,0.04),transparent_50%)]" />
         <div className="fixed inset-0 -z-10 noise-overlay" />
         {children}
       </body>

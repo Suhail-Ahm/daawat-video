@@ -8,54 +8,27 @@ import { Label } from "@/components/ui/label";
 
 /* ─── Types ───────────────────────────────────────────────────────── */
 
-interface StepTiming {
-  step: string;
-  label: string;
-  durationMs?: number;
-  durationLabel?: string;
-}
-
-interface PipelineTimings {
-  totalDurationMs?: number;
-  totalDurationLabel?: string;
-  steps: StepTiming[];
-}
-
+interface StepTiming { step: string; label: string; durationMs?: number; durationLabel?: string; }
+interface PipelineTimings { totalDurationMs?: number; totalDurationLabel?: string; steps: StepTiming[]; }
 interface JobRecord {
-  id: string;
-  userName: string;
-  userPhone: string;
-  status: string;
-  progress: number;
-  runpodJobId: string | null;
-  errorMessage: string | null;
-  stepTimings: PipelineTimings | null;
-  createdAt: string;
-  updatedAt: string;
-  finalVideoUrl: string | null;
+  id: string; userName: string; userPhone: string; status: string; progress: number;
+  runpodJobId: string | null; errorMessage: string | null; stepTimings: PipelineTimings | null;
+  createdAt: string; updatedAt: string; finalVideoUrl: string | null;
 }
-
 interface JobsResponse {
-  jobs: JobRecord[];
-  total: number;
-  stats: {
-    total: number;
-    completed: number;
-    failed: number;
-    inProgress: number;
-    avgDurationMs: number;
-  };
+  jobs: JobRecord[]; total: number;
+  stats: { total: number; completed: number; failed: number; inProgress: number; avgDurationMs: number; };
 }
 
 /* ─── Helpers ─────────────────────────────────────────────────────── */
 
 const STATUS_MAP: Record<string, { label: string; color: string; dotColor: string }> = {
-  pending:          { label: "Queued",     color: "text-zinc-400",    dotColor: "bg-zinc-400"    },
-  face_swapping:    { label: "Face Swap",  color: "text-amber-400",   dotColor: "bg-amber-400"   },
-  audio_processing: { label: "Audio",      color: "text-sky-400",     dotColor: "bg-sky-400"     },
-  merging:          { label: "Merging",    color: "text-violet-400",  dotColor: "bg-violet-400"  },
-  done:             { label: "Complete",   color: "text-emerald-400", dotColor: "bg-emerald-400" },
-  error:            { label: "Failed",     color: "text-red-400",     dotColor: "bg-red-400"     },
+  pending:          { label: "Queued",    color: "text-zinc-400",    dotColor: "bg-zinc-400"    },
+  face_swapping:    { label: "Face Swap", color: "text-amber-600",   dotColor: "bg-amber-500"   },
+  audio_processing: { label: "Audio",     color: "text-sky-600",     dotColor: "bg-sky-500"     },
+  merging:          { label: "Merging",   color: "text-violet-600",  dotColor: "bg-violet-500"  },
+  done:             { label: "Complete",  color: "text-emerald-600", dotColor: "bg-emerald-500" },
+  error:            { label: "Failed",    color: "text-red-600",     dotColor: "bg-red-500"     },
 };
 
 function formatDuration(ms: number): string {
@@ -74,8 +47,7 @@ function timeAgo(dateStr: string): string {
   if (mins < 60) return `${mins}m ago`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
 }
 
 /* ─── Main Page ───────────────────────────────────────────────────── */
@@ -89,186 +61,127 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
-
   const [jobsData, setJobsData] = useState<JobsResponse | null>(null);
   const [expandedJob, setExpandedJob] = useState<string | null>(null);
 
   const fetchJobs = useCallback(async () => {
-    try {
-      const res = await fetch("/api/jobs?limit=50");
-      if (res.ok) setJobsData(await res.json());
-    } catch { /* ignore */ }
+    try { const res = await fetch("/api/jobs?limit=50"); if (res.ok) setJobsData(await res.json()); } catch {}
   }, []);
 
-  useEffect(() => {
-    fetchJobs();
-    const interval = setInterval(fetchJobs, 10000);
-    return () => clearInterval(interval);
-  }, [fetchJobs]);
+  useEffect(() => { fetchJobs(); const i = setInterval(fetchJobs, 10000); return () => clearInterval(i); }, [fetchJobs]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelfie(file);
-      setPreview(URL.createObjectURL(file));
-    }
+    if (file) { setSelfie(file); setPreview(URL.createObjectURL(file)); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    if (!name.trim() || !phone.trim() || !selfie) {
-      setError("Please fill all fields and upload your selfie.");
-      return;
-    }
+    e.preventDefault(); setError("");
+    if (!name.trim() || !phone.trim() || !selfie) { setError("Please fill all fields and upload your selfie."); return; }
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("name", name.trim());
-      formData.append("phone", phone.trim());
-      formData.append("selfie", selfie);
-      const res = await fetch("/api/submit", { method: "POST", body: formData });
+      const fd = new FormData(); fd.append("name", name.trim()); fd.append("phone", phone.trim()); fd.append("selfie", selfie);
+      const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong"); return; }
       router.push(`/status/${data.jobId}`);
-    } catch {
-      setError("Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    } catch { setError("Network error. Please try again."); } finally { setLoading(false); }
   };
 
   return (
     <>
-      {/* ═══════════════════════════════════════════════════════════════
-          ABOVE THE FOLD — Full viewport, no scroll needed
-          Hero (left) + Form (right) on desktop, stacked on mobile
-      ═══════════════════════════════════════════════════════════════ */}
+      {/* ═══ ABOVE THE FOLD — Hero + Form ═══════════════════════════ */}
       <section className="relative min-h-[100dvh] flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 overflow-hidden">
-
-        {/* Ambient glows */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-500/10 via-orange-500/5 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[300px] bg-gradient-to-tl from-red-500/5 to-transparent rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-400/10 via-orange-400/5 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
         <div className="relative w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
-            {/* ─── Left: Hero CTA ──────────────────────────────────── */}
+            {/* Left: Hero CTA */}
             <div className="space-y-6 text-center lg:text-left">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/20 bg-amber-500/5 px-5 py-2 text-sm text-amber-300/90 backdrop-blur-sm">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/25 bg-amber-50 px-5 py-2 text-sm text-amber-700">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
                 </span>
                 World Biryani Day 2026
               </div>
 
-              {/* Headline */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]">
-                <span className="text-white">Star in Your</span>
+                <span className="text-zinc-900">Star in Your</span>
                 <br />
-                <span className="bg-gradient-to-r from-amber-300 via-orange-400 to-red-400 bg-clip-text text-transparent animate-gradient">
+                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient">
                   Own Daawat Ad
                 </span>
               </h1>
 
-              <p className="text-base sm:text-lg text-zinc-400 leading-relaxed max-w-md mx-auto lg:mx-0">
-                Upload a selfie — our AI puts <em className="text-zinc-300 not-italic font-medium">your face &amp; name</em> into
+              <p className="text-base sm:text-lg text-zinc-500 leading-relaxed max-w-md mx-auto lg:mx-0">
+                Upload a selfie — our AI puts <em className="text-zinc-700 not-italic font-medium">your face &amp; name</em> into
                 a premium Daawat Biryani commercial in under 3 minutes.
               </p>
 
-              {/* How it works — inline pills */}
+              {/* How it works pills */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 pt-1">
-                {[
-                  { n: "1", t: "Upload Selfie" },
-                  { n: "2", t: "AI Face Swap" },
-                  { n: "3", t: "Get Your Video" },
-                ].map((s) => (
-                  <div
-                    key={s.n}
-                    className="flex items-center gap-2 rounded-full bg-zinc-800/60 border border-zinc-700/40 px-3.5 py-1.5 text-xs"
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold">
-                      {s.n}
-                    </span>
-                    <span className="text-zinc-300 font-medium">{s.t}</span>
+                {[{ n: "1", t: "Upload Selfie" }, { n: "2", t: "AI Face Swap" }, { n: "3", t: "Get Your Video" }].map((s) => (
+                  <div key={s.n} className="flex items-center gap-2 rounded-full bg-white border border-zinc-200 px-3.5 py-1.5 text-xs shadow-sm">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold">{s.n}</span>
+                    <span className="text-zinc-700 font-medium">{s.t}</span>
                   </div>
                 ))}
               </div>
 
-              {/* Social proof or stats */}
+              {/* Social proof */}
               {jobsData && jobsData.stats.completed > 0 && (
                 <div className="flex items-center gap-4 justify-center lg:justify-start pt-2">
                   <div className="flex -space-x-2">
                     {["S", "N", "A", "R"].map((c, i) => (
-                      <div
-                        key={i}
-                        className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-500/25 to-orange-500/15 border-2 border-zinc-950 flex items-center justify-center text-amber-400 text-[10px] font-bold"
-                      >
+                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-white flex items-center justify-center text-amber-600 text-[10px] font-bold shadow-sm">
                         {c}
                       </div>
                     ))}
                   </div>
                   <p className="text-sm text-zinc-500">
-                    <span className="text-zinc-300 font-semibold">{jobsData.stats.completed}</span> videos created
+                    <span className="text-zinc-800 font-semibold">{jobsData.stats.completed}</span> videos created
                   </p>
                 </div>
               )}
             </div>
 
-            {/* ─── Right: Compact Form ─────────────────────────────── */}
+            {/* Right: Form */}
             <div className="w-full max-w-md mx-auto lg:mx-0 lg:ml-auto">
-              <div className="glass-strong rounded-2xl p-5 sm:p-6 shadow-2xl shadow-black/40">
+              <div className="glass-strong rounded-2xl p-5 sm:p-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  {/* Name + Phone in a row on wider screens */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <Label htmlFor="name" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Name</Label>
-                      <Input
-                        id="name"
-                        placeholder="Suhail Ahmed"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-600 focus-visible:ring-amber-500/50 focus-visible:border-amber-500/30 transition-all text-sm"
-                      />
+                      <Input id="name" placeholder="Suhail Ahmed" value={name} onChange={(e) => setName(e.target.value)}
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-amber-500/50 focus-visible:border-amber-400 transition-all text-sm" />
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="phone" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Phone</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+91 98765 43210"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-800 bg-zinc-900/80 text-white placeholder:text-zinc-600 focus-visible:ring-amber-500/50 focus-visible:border-amber-500/30 transition-all text-sm"
-                      />
+                      <Input id="phone" type="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)}
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-amber-500/50 focus-visible:border-amber-400 transition-all text-sm" />
                     </div>
                   </div>
 
-                  {/* Selfie Upload — compact */}
                   <div className="space-y-1">
                     <Label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Selfie</Label>
-                    <div
-                      onClick={() => fileRef.current?.click()}
-                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-700/80 bg-zinc-900/50 p-3 transition-all hover:border-amber-500/40 hover:bg-zinc-900/80"
-                    >
+                    <div onClick={() => fileRef.current?.click()}
+                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-3 transition-all hover:border-amber-400 hover:bg-amber-50/30">
                       {preview ? (
                         <div className="flex items-center gap-3">
-                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-amber-500/20" />
+                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-amber-300" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-sm font-medium text-zinc-300 truncate">{selfie?.name}</p>
-                            <p className="text-[11px] text-zinc-600">Tap to change</p>
+                            <p className="text-sm font-medium text-zinc-700 truncate">{selfie?.name}</p>
+                            <p className="text-[11px] text-zinc-400">Tap to change</p>
                           </div>
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-lg group-hover:bg-amber-500/10 group-hover:text-amber-400 transition-all">
-                            📸
-                          </div>
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg group-hover:bg-amber-100 group-hover:text-amber-600 transition-all">📸</div>
                           <div>
-                            <p className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">Upload a clear selfie</p>
-                            <p className="text-[11px] text-zinc-600">PNG, JPG, WebP · Max 10MB</p>
+                            <p className="text-sm text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload a clear selfie</p>
+                            <p className="text-[11px] text-zinc-400">PNG, JPG, WebP · Max 10MB</p>
                           </div>
                         </div>
                       )}
@@ -276,70 +189,50 @@ export default function HomePage() {
                     </div>
                   </div>
 
-                  {/* Error */}
                   {error && (
-                    <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-3 py-2 text-xs text-red-400 flex items-center gap-2">
+                    <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-600 flex items-center gap-2">
                       <span>⚠</span><span>{error}</span>
                     </div>
                   )}
 
-                  {/* Submit */}
-                  <Button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-semibold text-sm shadow-xl shadow-amber-500/15 hover:shadow-amber-500/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer"
-                  >
+                  <Button type="submit" disabled={loading}
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer">
                     {loading ? (
                       <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Processing...
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Processing...
                       </span>
-                    ) : (
-                      "Create My Video →"
-                    )}
+                    ) : "Create My Video →"}
                   </Button>
 
-                  <p className="text-center text-[10px] text-zinc-600 leading-relaxed">
+                  <p className="text-center text-[10px] text-zinc-400 leading-relaxed">
                     By submitting you consent to your image being used in a personalized video.
                   </p>
                 </form>
               </div>
             </div>
-
           </div>
         </div>
 
-        {/* Scroll hint */}
         {jobsData && jobsData.total > 0 && (
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-zinc-600 animate-float">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-zinc-400 animate-float">
             <span className="text-[10px] uppercase tracking-widest">Pipeline Monitor</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polyline points="6 9 12 15 18 9" /></svg>
           </div>
         )}
       </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          BELOW THE FOLD — Scrollable Pipeline Monitor
-          Developer-facing job tracking & performance metrics
-      ═══════════════════════════════════════════════════════════════ */}
+      {/* ═══ BELOW THE FOLD — Pipeline Monitor ══════════════════════ */}
       {jobsData && jobsData.total > 0 && (
         <section className="px-4 sm:px-6 lg:px-8 pb-24 pt-4">
           <div className="mx-auto max-w-5xl space-y-5">
-
-            {/* Section header */}
             <div className="flex items-end justify-between">
               <div>
-                <h2 className="text-xl font-bold text-white">Pipeline Monitor</h2>
-                <p className="text-xs text-zinc-600 mt-0.5">Real-time job tracking &amp; performance metrics</p>
+                <h2 className="text-xl font-bold text-zinc-900">Pipeline Monitor</h2>
+                <p className="text-xs text-zinc-400 mt-0.5">Real-time job tracking &amp; performance metrics</p>
               </div>
-              <button onClick={fetchJobs} className="text-[11px] text-zinc-600 hover:text-amber-400 transition-colors px-3 py-1.5 rounded-lg hover:bg-amber-500/5">
-                ↻ Refresh
-              </button>
+              <button onClick={fetchJobs} className="text-[11px] text-zinc-400 hover:text-amber-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-amber-50">↻ Refresh</button>
             </div>
 
-            {/* Stats Row */}
             <div className="grid grid-cols-4 gap-2.5">
               <MetricCard label="Total" value={jobsData.stats.total} />
               <MetricCard label="Done" value={jobsData.stats.completed} accent="emerald" />
@@ -347,25 +240,15 @@ export default function HomePage() {
               <MetricCard label="Avg" value={jobsData.stats.avgDurationMs > 0 ? formatDuration(jobsData.stats.avgDurationMs) : "—"} accent="amber" isText />
             </div>
 
-            {/* Jobs List */}
             <div className="glass rounded-2xl overflow-hidden">
-              <div className="hidden sm:grid grid-cols-[1fr_110px_90px_90px_70px] gap-2 px-4 py-2.5 border-b border-white/5 text-[10px] font-medium text-zinc-600 uppercase tracking-wider">
-                <span>User</span>
-                <span>Status</span>
-                <span>Duration</span>
-                <span>Created</span>
-                <span className="text-right">Info</span>
+              <div className="hidden sm:grid grid-cols-[1fr_110px_90px_90px_70px] gap-2 px-4 py-2.5 border-b border-zinc-200/60 text-[10px] font-medium text-zinc-400 uppercase tracking-wider">
+                <span>User</span><span>Status</span><span>Duration</span><span>Created</span><span className="text-right">Info</span>
               </div>
-
-              <div className="divide-y divide-white/[0.03]">
-                {jobsData.jobs.map((job) => {
-                  const s = STATUS_MAP[job.status] || STATUS_MAP.pending;
-                  const isExpanded = expandedJob === job.id;
-                  return (
-                    <JobRow key={job.id} job={job} statusInfo={s} isExpanded={isExpanded}
-                      onToggle={() => setExpandedJob(isExpanded ? null : job.id)} />
-                  );
-                })}
+              <div className="divide-y divide-zinc-100">
+                {jobsData.jobs.map((job) => (
+                  <JobRow key={job.id} job={job} statusInfo={STATUS_MAP[job.status] || STATUS_MAP.pending}
+                    isExpanded={expandedJob === job.id} onToggle={() => setExpandedJob(expandedJob === job.id ? null : job.id)} />
+                ))}
               </div>
             </div>
           </div>
@@ -377,18 +260,12 @@ export default function HomePage() {
 
 /* ─── Metric Card ─────────────────────────────────────────────────── */
 
-function MetricCard({ label, value, accent, isText }: {
-  label: string; value: number | string; accent?: string; isText?: boolean;
-}) {
-  const colors: Record<string, string> = {
-    emerald: "text-emerald-400", red: "text-red-400", amber: "text-amber-400",
-  };
+function MetricCard({ label, value, accent, isText }: { label: string; value: number | string; accent?: string; isText?: boolean; }) {
+  const c: Record<string, string> = { emerald: "text-emerald-600", red: "text-red-600", amber: "text-amber-600" };
   return (
     <div className="glass rounded-xl p-3 space-y-1">
-      <p className="text-[10px] text-zinc-600 uppercase tracking-wider font-medium">{label}</p>
-      <p className={`${isText ? "text-base" : "text-xl"} font-bold ${accent ? colors[accent] : "text-white"} font-mono tabular-nums leading-none`}>
-        {value}
-      </p>
+      <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">{label}</p>
+      <p className={`${isText ? "text-base" : "text-xl"} font-bold ${accent ? c[accent] : "text-zinc-900"} font-mono tabular-nums leading-none`}>{value}</p>
     </div>
   );
 }
@@ -396,111 +273,78 @@ function MetricCard({ label, value, accent, isText }: {
 /* ─── Job Row ─────────────────────────────────────────────────────── */
 
 function JobRow({ job, statusInfo, isExpanded, onToggle }: {
-  job: JobRecord;
-  statusInfo: { label: string; color: string; dotColor: string };
-  isExpanded: boolean;
-  onToggle: () => void;
+  job: JobRecord; statusInfo: { label: string; color: string; dotColor: string }; isExpanded: boolean; onToggle: () => void;
 }) {
   const timings = job.stepTimings;
   const isActive = ["pending", "face_swapping", "audio_processing", "merging"].includes(job.status);
 
   return (
     <>
-      <div
-        className={`grid grid-cols-1 sm:grid-cols-[1fr_110px_90px_90px_70px] gap-1 sm:gap-2 items-center px-4 py-3 cursor-pointer transition-colors hover:bg-white/[0.02] ${isExpanded ? "bg-white/[0.02]" : ""}`}
-        onClick={onToggle}
-      >
+      <div className={`grid grid-cols-1 sm:grid-cols-[1fr_110px_90px_90px_70px] gap-1 sm:gap-2 items-center px-4 py-3 cursor-pointer transition-colors hover:bg-amber-50/40 ${isExpanded ? "bg-amber-50/30" : ""}`} onClick={onToggle}>
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/15 flex items-center justify-center text-amber-400 text-xs font-bold shrink-0 ring-1 ring-amber-500/10">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center text-amber-600 text-xs font-bold shrink-0 ring-1 ring-amber-200/50">
             {job.userName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-zinc-200 truncate">{job.userName}</p>
-            <p className="text-[10px] text-zinc-600 truncate sm:hidden">{statusInfo.label} · {timings?.totalDurationLabel || "—"}</p>
+            <p className="text-sm font-medium text-zinc-800 truncate">{job.userName}</p>
+            <p className="text-[10px] text-zinc-400 truncate sm:hidden">{statusInfo.label} · {timings?.totalDurationLabel || "—"}</p>
           </div>
         </div>
-
         <div className="hidden sm:flex items-center gap-1.5">
           <span className={`relative h-1.5 w-1.5 rounded-full ${statusInfo.dotColor}`}>
             {isActive && <span className={`absolute inset-0 rounded-full ${statusInfo.dotColor} animate-ping opacity-60`} />}
           </span>
           <span className={`text-[11px] font-medium ${statusInfo.color}`}>{statusInfo.label}</span>
         </div>
-
-        <span className="hidden sm:block text-[11px] font-mono text-zinc-600">
-          {timings?.totalDurationLabel || (isActive ? "..." : "—")}
-        </span>
-
-        <span className="hidden sm:block text-[10px] text-zinc-600" title={new Date(job.createdAt).toLocaleString()}>
-          {timeAgo(job.createdAt)}
-        </span>
-
+        <span className="hidden sm:block text-[11px] font-mono text-zinc-400">{timings?.totalDurationLabel || (isActive ? "..." : "—")}</span>
+        <span className="hidden sm:block text-[10px] text-zinc-400">{timeAgo(job.createdAt)}</span>
         <div className="hidden sm:flex items-center justify-end gap-2">
           {job.status === "done" && job.finalVideoUrl && (
-            <a href={job.finalVideoUrl} target="_blank" rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="text-[10px] font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
-              ▶
-            </a>
+            <a href={job.finalVideoUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-emerald-600 hover:text-emerald-500 transition-colors">▶</a>
           )}
-          {isActive && (
-            <a href={`/status/${job.id}`} onClick={(e) => e.stopPropagation()}
-              className="text-[10px] font-medium text-amber-400 hover:text-amber-300 transition-colors">
-              →
-            </a>
-          )}
-          <span className={`text-zinc-700 text-[10px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>▾</span>
+          {isActive && <a href={`/status/${job.id}`} onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-amber-600 hover:text-amber-500 transition-colors">→</a>}
+          <span className={`text-zinc-300 text-[10px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>▾</span>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="px-4 pb-4 pt-1 bg-white/[0.01]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-white/[0.04] bg-zinc-900/50 p-3.5">
+        <div className="px-4 pb-4 pt-1 bg-amber-50/20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-zinc-200/60 bg-white/60 p-3.5">
             <div className="space-y-2.5">
-              <h4 className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Job Info</h4>
+              <h4 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Job Info</h4>
               <div className="space-y-1.5 text-[11px]">
                 <InfoRow label="Job ID" value={job.id} mono />
                 <InfoRow label="RunPod" value={job.runpodJobId || "—"} mono />
                 <InfoRow label="Progress" value={`${job.progress}%`} />
                 <InfoRow label="Created" value={new Date(job.createdAt).toLocaleString()} />
               </div>
-              {job.errorMessage && (
-                <div className="rounded-lg border border-red-500/15 bg-red-500/5 p-2 text-[10px] text-red-400 break-all leading-relaxed">
-                  {job.errorMessage}
-                </div>
-              )}
+              {job.errorMessage && <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-[10px] text-red-600 break-all">{job.errorMessage}</div>}
             </div>
-
             <div className="space-y-2.5">
-              <h4 className="text-[10px] font-semibold text-zinc-600 uppercase tracking-wider">Step Timings</h4>
-              {timings?.steps && timings.steps.length > 0 ? (
+              <h4 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Step Timings</h4>
+              {timings?.steps?.length ? (
                 <div className="space-y-1.5">
                   {timings.steps.map((step, i) => (
                     <div key={i} className="flex items-center justify-between text-[11px]">
                       <span className="text-zinc-500">{step.label}</span>
                       <div className="flex items-center gap-2">
                         {step.durationMs && timings.totalDurationMs && (
-                          <div className="h-1 rounded-full bg-zinc-800 w-12 overflow-hidden">
-                            <div className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500"
-                              style={{ width: `${Math.min(100, (step.durationMs / timings.totalDurationMs) * 100)}%` }} />
+                          <div className="h-1 rounded-full bg-zinc-200 w-12 overflow-hidden">
+                            <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400" style={{ width: `${Math.min(100, (step.durationMs / timings.totalDurationMs) * 100)}%` }} />
                           </div>
                         )}
-                        <span className={`font-mono text-[10px] w-12 text-right ${step.durationLabel ? "text-emerald-400/80" : "text-zinc-700"}`}>
-                          {step.durationLabel || "—"}
-                        </span>
+                        <span className={`font-mono text-[10px] w-12 text-right ${step.durationLabel ? "text-emerald-600" : "text-zinc-300"}`}>{step.durationLabel || "—"}</span>
                       </div>
                     </div>
                   ))}
                   {timings.totalDurationLabel && (
-                    <div className="flex items-center justify-between text-[11px] pt-1.5 mt-1.5 border-t border-white/[0.04]">
-                      <span className="text-zinc-400 font-medium">Total</span>
-                      <span className="font-mono text-amber-400 font-semibold">{timings.totalDurationLabel}</span>
+                    <div className="flex items-center justify-between text-[11px] pt-1.5 mt-1.5 border-t border-zinc-200/60">
+                      <span className="text-zinc-700 font-medium">Total</span>
+                      <span className="font-mono text-amber-600 font-semibold">{timings.totalDurationLabel}</span>
                     </div>
                   )}
                 </div>
-              ) : (
-                <p className="text-[11px] text-zinc-700">No timing data yet</p>
-              )}
+              ) : <p className="text-[11px] text-zinc-300">No timing data yet</p>}
             </div>
           </div>
         </div>
@@ -512,8 +356,8 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
 function InfoRow({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3">
-      <span className="text-zinc-600 shrink-0">{label}</span>
-      <span className={`text-zinc-400 truncate ${mono ? "font-mono text-[10px]" : ""}`}>{value}</span>
+      <span className="text-zinc-400 shrink-0">{label}</span>
+      <span className={`text-zinc-600 truncate ${mono ? "font-mono text-[10px]" : ""}`}>{value}</span>
     </div>
   );
 }
