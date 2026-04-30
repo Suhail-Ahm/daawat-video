@@ -74,7 +74,8 @@ def handler(event):
             "--face-swapper-model", "inswapper_128_fp16",
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
-            "--output-video-quality", "90",
+            "--output-video-encoder", "libx264",
+            "--output-video-quality", "70",
         ]
 
         print(f"  CMD: {' '.join(cmd)}")
