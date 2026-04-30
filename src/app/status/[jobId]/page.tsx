@@ -62,15 +62,15 @@ export default function StatusPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-b from-amber-400/8 via-orange-400/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-b from-[#C5944A]/8 via-[#8B1A1A]/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
       <div className="relative w-full max-w-lg space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/40 bg-amber-50 px-4 py-1.5 text-sm text-amber-700">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#C5944A]/30 bg-[#FDF6EC] px-4 py-1.5 text-sm text-[#8B4513]">
             <span className="relative flex h-2 w-2">
-              {job?.status !== "done" && job?.status !== "error" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />}
-              <span className={`relative inline-flex h-2 w-2 rounded-full ${job?.status === "done" ? "bg-emerald-500" : job?.status === "error" ? "bg-red-500" : "bg-amber-500"}`} />
+              {job?.status !== "done" && job?.status !== "error" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C5944A] opacity-75" />}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${job?.status === "done" ? "bg-emerald-500" : job?.status === "error" ? "bg-red-500" : "bg-[#C5944A]"}`} />
             </span>
             {job?.status === "done" ? "Pipeline Complete" : job?.status === "error" ? "Pipeline Failed" : "Processing..."}
           </div>
@@ -81,7 +81,7 @@ export default function StatusPage() {
             ) : job?.status === "error" ? (
               <span className="bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">Something Broke</span>
             ) : (
-              <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient">Creating Your Video</span>
+              <span className="bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] bg-clip-text text-transparent animate-gradient">Creating Your Video</span>
             )}
           </h1>
 
@@ -92,14 +92,14 @@ export default function StatusPage() {
         <div className="glass-strong rounded-2xl p-6 space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Elapsed Time</span>
-            <span className="font-mono text-lg text-amber-600 tabular-nums font-semibold">
+            <span className="font-mono text-lg text-[#8B4513] tabular-nums font-semibold">
               {formatDuration(job?.status === "done" || job?.status === "error" ? job.stepTimings?.totalDurationMs || elapsedMs : elapsedMs)}
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="h-1.5 rounded-full bg-zinc-200 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 transition-all duration-700 ease-out" style={{ width: `${job?.progress || 0}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] transition-all duration-700 ease-out" style={{ width: `${job?.progress || 0}%` }} />
             </div>
             <div className="flex justify-between text-[11px]">
               <span className="text-zinc-500">{job?.statusLabel || "Initializing..."}</span>

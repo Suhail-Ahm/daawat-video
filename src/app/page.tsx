@@ -92,25 +92,25 @@ export default function HomePage() {
     <>
       {/* ═══ ABOVE THE FOLD — Hero + Form ═══════════════════════════ */}
       <section className="relative min-h-[100dvh] flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-400/10 via-orange-400/5 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-600/8 via-red-900/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
         <div className="relative w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* Left: Hero CTA */}
             <div className="space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-amber-500/25 bg-amber-50 px-5 py-2 text-sm text-amber-700">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#C5944A]/30 bg-[#FDF6EC] px-5 py-2 text-sm text-[#8B4513]">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-500 opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C5944A] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C5944A]" />
                 </span>
-                World Biryani Day 2026
+                Daawat World Biryani Day 2026
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]">
                 <span className="text-zinc-900">Star in Your</span>
                 <br />
-                <span className="bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient">
+                <span className="bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] bg-clip-text text-transparent animate-gradient">
                   Own Daawat Ad
                 </span>
               </h1>
@@ -123,8 +123,8 @@ export default function HomePage() {
               {/* How it works pills */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 pt-1">
                 {[{ n: "1", t: "Upload Selfie" }, { n: "2", t: "AI Face Swap" }, { n: "3", t: "Get Your Video" }].map((s) => (
-                  <div key={s.n} className="flex items-center gap-2 rounded-full bg-white border border-zinc-200 px-3.5 py-1.5 text-xs shadow-sm">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-100 text-amber-600 text-[10px] font-bold">{s.n}</span>
+                  <div key={s.n} className="flex items-center gap-2 rounded-full bg-white border border-[#C5944A]/20 px-3.5 py-1.5 text-xs shadow-sm">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FDF6EC] text-[#8B4513] text-[10px] font-bold">{s.n}</span>
                     <span className="text-zinc-700 font-medium">{s.t}</span>
                   </div>
                 ))}
@@ -135,7 +135,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-4 justify-center lg:justify-start pt-2">
                   <div className="flex -space-x-2">
                     {["S", "N", "A", "R"].map((c, i) => (
-                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 border-2 border-white flex items-center justify-center text-amber-600 text-[10px] font-bold shadow-sm">
+                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-[#FDF6EC] to-[#F5E6D0] border-2 border-white flex items-center justify-center text-[#8B4513] text-[10px] font-bold shadow-sm">
                         {c}
                       </div>
                     ))}
@@ -155,22 +155,22 @@ export default function HomePage() {
                     <div className="space-y-1">
                       <Label htmlFor="name" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Name</Label>
                       <Input id="name" placeholder="Suhail Ahmed" value={name} onChange={(e) => setName(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-amber-500/50 focus-visible:border-amber-400 transition-all text-sm" />
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#C5944A]/50 focus-visible:border-[#C5944A]/40 transition-all text-sm" />
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="phone" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Phone</Label>
                       <Input id="phone" type="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-amber-500/50 focus-visible:border-amber-400 transition-all text-sm" />
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#C5944A]/50 focus-visible:border-[#C5944A]/40 transition-all text-sm" />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <Label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Selfie</Label>
                     <div onClick={() => fileRef.current?.click()}
-                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-3 transition-all hover:border-amber-400 hover:bg-amber-50/30">
+                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-3 transition-all hover:border-[#C5944A]/50 hover:bg-[#FDF6EC]/50">
                       {preview ? (
                         <div className="flex items-center gap-3">
-                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-amber-300" />
+                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-[#C5944A]/40" />
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-zinc-700 truncate">{selfie?.name}</p>
                             <p className="text-[11px] text-zinc-400">Tap to change</p>
@@ -178,7 +178,7 @@ export default function HomePage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg group-hover:bg-amber-100 group-hover:text-amber-600 transition-all">📸</div>
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg group-hover:bg-[#FDF6EC] group-hover:text-[#8B4513] transition-all">📸</div>
                           <div>
                             <p className="text-sm text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload a clear selfie</p>
                             <p className="text-[11px] text-zinc-400">PNG, JPG, WebP · Max 10MB</p>
@@ -196,7 +196,7 @@ export default function HomePage() {
                   )}
 
                   <Button type="submit" disabled={loading}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 text-white font-semibold text-sm shadow-lg shadow-amber-500/20 hover:shadow-amber-500/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer">
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#8B1A1A] via-[#A52A2A] to-[#C5944A] text-white font-semibold text-sm shadow-lg shadow-[#8B1A1A]/20 hover:shadow-[#8B1A1A]/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer">
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Processing...
