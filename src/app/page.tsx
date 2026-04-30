@@ -24,7 +24,7 @@ interface JobsResponse {
 
 const STATUS_MAP: Record<string, { label: string; color: string; dotColor: string }> = {
   pending:          { label: "Queued",    color: "text-zinc-400",    dotColor: "bg-zinc-400"    },
-  face_swapping:    { label: "Face Swap", color: "text-amber-600",   dotColor: "bg-amber-500"   },
+  face_swapping:    { label: "Face Swap", color: "text-[#002e82]",   dotColor: "bg-[#e4b573]"   },
   audio_processing: { label: "Audio",     color: "text-sky-600",     dotColor: "bg-sky-500"     },
   merging:          { label: "Merging",   color: "text-violet-600",  dotColor: "bg-violet-500"  },
   done:             { label: "Complete",  color: "text-emerald-600", dotColor: "bg-emerald-500" },
@@ -92,17 +92,17 @@ export default function HomePage() {
     <>
       {/* ═══ ABOVE THE FOLD — Hero + Form ═══════════════════════════ */}
       <section className="relative min-h-[100dvh] flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-amber-600/8 via-red-900/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-gradient-to-b from-[#e4b573]/10 via-[#002e82]/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
         <div className="relative w-full max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
             {/* Left: Hero CTA */}
             <div className="space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#C5944A]/30 bg-[#FDF6EC] px-5 py-2 text-sm text-[#8B4513]">
+              <div className="inline-flex items-center gap-2.5 rounded-full border border-[#e4b573]/30 bg-[#f0ebe0] px-5 py-2 text-sm text-[#002e82]">
                 <span className="relative flex h-2 w-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C5944A] opacity-75" />
-                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#C5944A]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e4b573] opacity-75" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-[#e4b573]" />
                 </span>
                 Daawat World Biryani Day 2026
               </div>
@@ -110,7 +110,7 @@ export default function HomePage() {
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08]">
                 <span className="text-zinc-900">Star in Your</span>
                 <br />
-                <span className="bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] bg-clip-text text-transparent animate-gradient">
+                <span className="bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] bg-clip-text text-transparent animate-gradient">
                   Own Daawat Ad
                 </span>
               </h1>
@@ -123,8 +123,8 @@ export default function HomePage() {
               {/* How it works pills */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-2.5 pt-1">
                 {[{ n: "1", t: "Upload Selfie" }, { n: "2", t: "AI Face Swap" }, { n: "3", t: "Get Your Video" }].map((s) => (
-                  <div key={s.n} className="flex items-center gap-2 rounded-full bg-white border border-[#C5944A]/20 px-3.5 py-1.5 text-xs shadow-sm">
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#FDF6EC] text-[#8B4513] text-[10px] font-bold">{s.n}</span>
+                  <div key={s.n} className="flex items-center gap-2 rounded-full bg-white border border-[#e4b573]/20 px-3.5 py-1.5 text-xs shadow-sm">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#f0ebe0] text-[#002e82] text-[10px] font-bold">{s.n}</span>
                     <span className="text-zinc-700 font-medium">{s.t}</span>
                   </div>
                 ))}
@@ -135,7 +135,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-4 justify-center lg:justify-start pt-2">
                   <div className="flex -space-x-2">
                     {["S", "N", "A", "R"].map((c, i) => (
-                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-[#FDF6EC] to-[#F5E6D0] border-2 border-white flex items-center justify-center text-[#8B4513] text-[10px] font-bold shadow-sm">
+                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-[#f0ebe0] to-[#e8dfd0] border-2 border-white flex items-center justify-center text-[#002e82] text-[10px] font-bold shadow-sm">
                         {c}
                       </div>
                     ))}
@@ -155,22 +155,22 @@ export default function HomePage() {
                     <div className="space-y-1">
                       <Label htmlFor="name" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Name</Label>
                       <Input id="name" placeholder="Suhail Ahmed" value={name} onChange={(e) => setName(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#C5944A]/50 focus-visible:border-[#C5944A]/40 transition-all text-sm" />
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#e4b573]/50 focus-visible:border-[#e4b573]/40 transition-all text-sm" />
                     </div>
                     <div className="space-y-1">
                       <Label htmlFor="phone" className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Phone</Label>
                       <Input id="phone" type="tel" placeholder="+91 98765 43210" value={phone} onChange={(e) => setPhone(e.target.value)}
-                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#C5944A]/50 focus-visible:border-[#C5944A]/40 transition-all text-sm" />
+                        className="h-11 rounded-xl border-zinc-200 bg-zinc-50/80 text-zinc-900 placeholder:text-zinc-400 focus-visible:ring-[#e4b573]/50 focus-visible:border-[#e4b573]/40 transition-all text-sm" />
                     </div>
                   </div>
 
                   <div className="space-y-1">
                     <Label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Selfie</Label>
                     <div onClick={() => fileRef.current?.click()}
-                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-3 transition-all hover:border-[#C5944A]/50 hover:bg-[#FDF6EC]/50">
+                      className="group cursor-pointer rounded-xl border border-dashed border-zinc-300 bg-zinc-50/50 p-3 transition-all hover:border-[#e4b573]/50 hover:bg-[#f0ebe0]/50">
                       {preview ? (
                         <div className="flex items-center gap-3">
-                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-[#C5944A]/40" />
+                          <img src={preview} alt="Preview" className="h-12 w-12 rounded-lg object-cover ring-1 ring-[#e4b573]/40" />
                           <div className="min-w-0 flex-1">
                             <p className="text-sm font-medium text-zinc-700 truncate">{selfie?.name}</p>
                             <p className="text-[11px] text-zinc-400">Tap to change</p>
@@ -178,7 +178,7 @@ export default function HomePage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg group-hover:bg-[#FDF6EC] group-hover:text-[#8B4513] transition-all">📸</div>
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-lg group-hover:bg-[#f0ebe0] group-hover:text-[#002e82] transition-all">📸</div>
                           <div>
                             <p className="text-sm text-zinc-500 group-hover:text-zinc-700 transition-colors">Upload a clear selfie</p>
                             <p className="text-[11px] text-zinc-400">PNG, JPG, WebP · Max 10MB</p>
@@ -196,7 +196,7 @@ export default function HomePage() {
                   )}
 
                   <Button type="submit" disabled={loading}
-                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#8B1A1A] via-[#A52A2A] to-[#C5944A] text-white font-semibold text-sm shadow-lg shadow-[#8B1A1A]/20 hover:shadow-[#8B1A1A]/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer">
+                    className="w-full h-11 rounded-xl bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] text-white font-semibold text-sm shadow-lg shadow-[#002e82]/20 hover:shadow-[#002e82]/30 hover:brightness-110 disabled:opacity-50 transition-all cursor-pointer">
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />Processing...
@@ -230,7 +230,7 @@ export default function HomePage() {
                 <h2 className="text-xl font-bold text-zinc-900">Pipeline Monitor</h2>
                 <p className="text-xs text-zinc-400 mt-0.5">Real-time job tracking &amp; performance metrics</p>
               </div>
-              <button onClick={fetchJobs} className="text-[11px] text-zinc-400 hover:text-amber-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-amber-50">↻ Refresh</button>
+              <button onClick={fetchJobs} className="text-[11px] text-zinc-400 hover:text-[#002e82] transition-colors px-3 py-1.5 rounded-lg hover:bg-[#f0ebe0]">↻ Refresh</button>
             </div>
 
             <div className="grid grid-cols-4 gap-2.5">
@@ -261,7 +261,7 @@ export default function HomePage() {
 /* ─── Metric Card ─────────────────────────────────────────────────── */
 
 function MetricCard({ label, value, accent, isText }: { label: string; value: number | string; accent?: string; isText?: boolean; }) {
-  const c: Record<string, string> = { emerald: "text-emerald-600", red: "text-red-600", amber: "text-amber-600" };
+  const c: Record<string, string> = { emerald: "text-emerald-600", red: "text-red-600", amber: "text-[#002e82]" };
   return (
     <div className="glass rounded-xl p-3 space-y-1">
       <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-medium">{label}</p>
@@ -280,9 +280,9 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
 
   return (
     <>
-      <div className={`grid grid-cols-1 sm:grid-cols-[1fr_110px_90px_90px_70px] gap-1 sm:gap-2 items-center px-4 py-3 cursor-pointer transition-colors hover:bg-amber-50/40 ${isExpanded ? "bg-amber-50/30" : ""}`} onClick={onToggle}>
+      <div className={`grid grid-cols-1 sm:grid-cols-[1fr_110px_90px_90px_70px] gap-1 sm:gap-2 items-center px-4 py-3 cursor-pointer transition-colors hover:bg-[#f0ebe0]/40 ${isExpanded ? "bg-[#f0ebe0]/30" : ""}`} onClick={onToggle}>
         <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 flex items-center justify-center text-amber-600 text-xs font-bold shrink-0 ring-1 ring-amber-200/50">
+          <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#f0ebe0] to-[#e8dfd0] flex items-center justify-center text-[#002e82] text-xs font-bold shrink-0 ring-1 ring-[#e4b573]/50">
             {job.userName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -302,13 +302,13 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
           {job.status === "done" && job.finalVideoUrl && (
             <a href={job.finalVideoUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-emerald-600 hover:text-emerald-500 transition-colors">▶</a>
           )}
-          {isActive && <a href={`/status/${job.id}`} onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-amber-600 hover:text-amber-500 transition-colors">→</a>}
+          {isActive && <a href={`/status/${job.id}`} onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-[#002e82] hover:text-[#1a4a99] transition-colors">→</a>}
           <span className={`text-zinc-300 text-[10px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>▾</span>
         </div>
       </div>
 
       {isExpanded && (
-        <div className="px-4 pb-4 pt-1 bg-amber-50/20">
+        <div className="px-4 pb-4 pt-1 bg-[#f0ebe0]/20">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 rounded-xl border border-zinc-200/60 bg-white/60 p-3.5">
             <div className="space-y-2.5">
               <h4 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Job Info</h4>
@@ -330,7 +330,7 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
                       <div className="flex items-center gap-2">
                         {step.durationMs && timings.totalDurationMs && (
                           <div className="h-1 rounded-full bg-zinc-200 w-12 overflow-hidden">
-                            <div className="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-400" style={{ width: `${Math.min(100, (step.durationMs / timings.totalDurationMs) * 100)}%` }} />
+                            <div className="h-full rounded-full bg-gradient-to-r from-[#e4b573] to-[#002e82]" style={{ width: `${Math.min(100, (step.durationMs / timings.totalDurationMs) * 100)}%` }} />
                           </div>
                         )}
                         <span className={`font-mono text-[10px] w-12 text-right ${step.durationLabel ? "text-emerald-600" : "text-zinc-300"}`}>{step.durationLabel || "—"}</span>
@@ -340,7 +340,7 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
                   {timings.totalDurationLabel && (
                     <div className="flex items-center justify-between text-[11px] pt-1.5 mt-1.5 border-t border-zinc-200/60">
                       <span className="text-zinc-700 font-medium">Total</span>
-                      <span className="font-mono text-amber-600 font-semibold">{timings.totalDurationLabel}</span>
+                      <span className="font-mono text-[#002e82] font-semibold">{timings.totalDurationLabel}</span>
                     </div>
                   )}
                 </div>

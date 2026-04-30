@@ -25,7 +25,7 @@ function formatDuration(ms: number): string {
 function LiveTimer({ startTime }: { startTime: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const i = setInterval(() => setNow(Date.now()), 100); return () => clearInterval(i); }, []);
-  return <span className="font-mono text-amber-600 tabular-nums">{formatDuration(now - new Date(startTime).getTime())}</span>;
+  return <span className="font-mono text-[#002e82] tabular-nums">{formatDuration(now - new Date(startTime).getTime())}</span>;
 }
 
 export default function StatusPage() {
@@ -62,15 +62,15 @@ export default function StatusPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-b from-[#C5944A]/8 via-[#8B1A1A]/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[400px] bg-gradient-to-b from-[#e4b573]/8 via-[#002e82]/4 to-transparent rounded-full blur-3xl animate-pulse-glow pointer-events-none" />
 
       <div className="relative w-full max-w-lg space-y-8">
         {/* Header */}
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#C5944A]/30 bg-[#FDF6EC] px-4 py-1.5 text-sm text-[#8B4513]">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#e4b573]/30 bg-[#f0ebe0] px-4 py-1.5 text-sm text-[#002e82]">
             <span className="relative flex h-2 w-2">
-              {job?.status !== "done" && job?.status !== "error" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#C5944A] opacity-75" />}
-              <span className={`relative inline-flex h-2 w-2 rounded-full ${job?.status === "done" ? "bg-emerald-500" : job?.status === "error" ? "bg-red-500" : "bg-[#C5944A]"}`} />
+              {job?.status !== "done" && job?.status !== "error" && <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#e4b573] opacity-75" />}
+              <span className={`relative inline-flex h-2 w-2 rounded-full ${job?.status === "done" ? "bg-emerald-500" : job?.status === "error" ? "bg-red-500" : "bg-[#e4b573]"}`} />
             </span>
             {job?.status === "done" ? "Pipeline Complete" : job?.status === "error" ? "Pipeline Failed" : "Processing..."}
           </div>
@@ -81,7 +81,7 @@ export default function StatusPage() {
             ) : job?.status === "error" ? (
               <span className="bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">Something Broke</span>
             ) : (
-              <span className="bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] bg-clip-text text-transparent animate-gradient">Creating Your Video</span>
+              <span className="bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] bg-clip-text text-transparent animate-gradient">Creating Your Video</span>
             )}
           </h1>
 
@@ -92,14 +92,14 @@ export default function StatusPage() {
         <div className="glass-strong rounded-2xl p-6 space-y-6">
           <div className="flex items-center justify-between">
             <span className="text-[11px] text-zinc-400 uppercase tracking-wider font-medium">Elapsed Time</span>
-            <span className="font-mono text-lg text-[#8B4513] tabular-nums font-semibold">
+            <span className="font-mono text-lg text-[#002e82] tabular-nums font-semibold">
               {formatDuration(job?.status === "done" || job?.status === "error" ? job.stepTimings?.totalDurationMs || elapsedMs : elapsedMs)}
             </span>
           </div>
 
           <div className="space-y-2">
             <div className="h-1.5 rounded-full bg-zinc-200 overflow-hidden">
-              <div className="h-full rounded-full bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] transition-all duration-700 ease-out" style={{ width: `${job?.progress || 0}%` }} />
+              <div className="h-full rounded-full bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] transition-all duration-700 ease-out" style={{ width: `${job?.progress || 0}%` }} />
             </div>
             <div className="flex justify-between text-[11px]">
               <span className="text-zinc-500">{job?.statusLabel || "Initializing..."}</span>
@@ -113,8 +113,8 @@ export default function StatusPage() {
               const isDone = i < currentIdx || (step.key === "done" && job?.status === "done");
               const timing = getStepTiming(step.key);
               return (
-                <div key={step.key} className={`flex items-center gap-3 rounded-xl p-3 transition-all ${isActive ? "bg-amber-50 ring-1 ring-amber-300/40" : isDone ? "bg-emerald-50/50" : "opacity-40"}`}>
-                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold transition-all ${isDone ? "bg-emerald-100 text-emerald-600" : isActive ? "bg-amber-100 text-amber-600" : "bg-zinc-100 text-zinc-400"}`}>
+                <div key={step.key} className={`flex items-center gap-3 rounded-xl p-3 transition-all ${isActive ? "bg-[#f0ebe0] ring-1 ring-amber-300/40" : isDone ? "bg-emerald-50/50" : "opacity-40"}`}>
+                  <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-bold transition-all ${isDone ? "bg-emerald-100 text-emerald-600" : isActive ? "bg-[#f0ebe0] text-[#002e82]" : "bg-zinc-100 text-zinc-400"}`}>
                     {isDone ? "✓" : step.icon}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -126,7 +126,7 @@ export default function StatusPage() {
                     {isActive && timing && (
                       <div className="flex items-center gap-2">
                         <span className="text-[11px]"><LiveTimer startTime={timing.startedAt} /></span>
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-amber-300 border-t-amber-600" />
+                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-[#e4b573] border-t-[#002e82]" />
                       </div>
                     )}
                   </div>

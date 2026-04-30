@@ -28,9 +28,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         {/* Light warm background */}
-        <div className="fixed inset-0 -z-10 bg-[#FFFCF7]" />
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(180,83,9,0.05),transparent_50%)]" />
-        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,rgba(139,26,26,0.04),transparent_50%)]" />
+        <div className="fixed inset-0 -z-10 bg-[#f8f5ee]" />
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(0,46,130,0.04),transparent_50%)]" />
+        <div className="fixed inset-0 -z-10 bg-[radial-gradient(ellipse_at_bottom_right,rgba(228,181,115,0.06),transparent_50%)]" />
         <div className="fixed inset-0 -z-10 noise-overlay" />
         {children}
       </body>

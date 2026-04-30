@@ -19,7 +19,7 @@ export default function ResultPage() {
     return (
       <main className="flex min-h-screen items-center justify-center p-4">
         <div className="text-center space-y-4">
-          <div className="h-10 w-10 mx-auto animate-spin rounded-full border-2 border-amber-200 border-t-amber-500" />
+          <div className="h-10 w-10 mx-auto animate-spin rounded-full border-2 border-[#e4b573] border-t-[#e4b573]" />
           <p className="text-sm text-zinc-400">Loading your video...</p>
         </div>
       </main>
@@ -28,7 +28,7 @@ export default function ResultPage() {
 
   return (
     <main className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-b from-emerald-400/6 via-[#C5944A]/4 to-transparent rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-gradient-to-b from-emerald-400/6 via-[#e4b573]/4 to-transparent rounded-full blur-3xl pointer-events-none" />
 
       <div className="relative w-full max-w-2xl space-y-8">
         <div className="text-center space-y-3">
@@ -38,16 +38,16 @@ export default function ResultPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight">
-            <span className="bg-gradient-to-r from-[#8B1A1A] via-[#B8432F] to-[#C5944A] bg-clip-text text-transparent">Your Video is Ready!</span>
+            <span className="bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] bg-clip-text text-transparent">Your Video is Ready!</span>
           </h1>
-          <p className="text-zinc-500">Here&apos;s your personalized Daawat ad, <span className="text-[#8B4513] font-medium">{job.name}</span></p>
+          <p className="text-zinc-500">Here&apos;s your personalized Daawat ad, <span className="text-[#002e82] font-medium">{job.name}</span></p>
         </div>
 
         <div className="glass-strong rounded-2xl overflow-hidden">
           <video src={job.videoUrl} controls autoPlay playsInline className="w-full aspect-video bg-zinc-100" />
           <div className="p-4 sm:p-5 flex flex-col sm:flex-row gap-3">
             <a href={job.videoUrl} download={`daawat_${job.name}.mp4`}
-              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#8B1A1A] via-[#A52A2A] to-[#C5944A] text-white font-semibold shadow-lg shadow-[#8B1A1A]/15 hover:shadow-[#8B1A1A]/25 hover:brightness-110 h-12 px-6 text-sm transition-all">
+              className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#002e82] via-[#1a4a99] to-[#e4b573] text-white font-semibold shadow-lg shadow-[#002e82]/15 hover:shadow-[#002e82]/25 hover:brightness-110 h-12 px-6 text-sm transition-all">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Download Video
             </a>
@@ -67,12 +67,12 @@ export default function ResultPage() {
           <div className="glass rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-medium text-zinc-400 uppercase tracking-wider">Pipeline Performance</span>
-              <span className="font-mono text-sm text-[#8B4513] font-semibold">{job.stepTimings.totalDurationLabel}</span>
+              <span className="font-mono text-sm text-[#002e82] font-semibold">{job.stepTimings.totalDurationLabel}</span>
             </div>
             <div className="flex gap-1 h-2 rounded-full overflow-hidden bg-zinc-200">
               {job.stepTimings.steps.map((step, i) => {
                 const pct = step.durationMs && job.stepTimings?.totalDurationMs ? (step.durationMs / job.stepTimings.totalDurationMs) * 100 : 33;
-                const colors = ["from-amber-400 to-orange-400", "from-sky-400 to-blue-400", "from-violet-400 to-purple-400"];
+                const colors = ["from-[#e4b573] to-[#002e82]", "from-sky-400 to-blue-400", "from-violet-400 to-purple-400"];
                 return <div key={i} className={`h-full bg-gradient-to-r ${colors[i % colors.length]}`} style={{ width: `${Math.max(5, pct)}%` }} title={`${step.label}: ${step.durationLabel || "—"}`} />;
               })}
             </div>
@@ -83,7 +83,7 @@ export default function ResultPage() {
         )}
 
         <div className="text-center">
-          <button className="text-sm text-zinc-400 hover:text-amber-600 transition-colors" onClick={() => (window.location.href = "/")}>← Create another video</button>
+          <button className="text-sm text-zinc-400 hover:text-[#002e82] transition-colors" onClick={() => (window.location.href = "/")}>← Create another video</button>
         </div>
       </div>
     </main>
