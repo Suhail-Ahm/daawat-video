@@ -101,20 +101,27 @@ def handler(event):
             # ── Face detection ──
             "--face-selector-mode", "many",
             "--face-selector-gender", gender,
-            # ── Face swapper: hyperswap + 512x pixel boost for sharp faces ──
+            # ── Face masking: box + occlusion for natural blending ──
+            "--face-mask-types", "box", "occlusion",
+            "--face-mask-blur", "0.3",
+            "--face-mask-padding", "1", "1", "1", "1",
+            # ── Face swapper: hyperswap_1c_256 + 768x pixel boost ──
             "--face-swapper-model", "hyperswap_1c_256",
-            "--face-swapper-pixel-boost", "512x512",
-            # ── Face enhancer: GFPGAN 1.4 at 80% blend (natural skin, no plastic look) ──
+            "--face-swapper-pixel-boost", "768x768",
+            # ── Face enhancer: GFPGAN 1.4 — reduced blend for natural look ──
             "--face-enhancer-model", "gfpgan_1.4",
-            "--face-enhancer-blend", "80",
-            # ── Expression restorer: LivePortrait (preserves talking, blinking, emotions) ──
+            "--face-enhancer-blend", "65",
+            "--face-enhancer-weight", "0.6",
+            # ── Expression restorer: LivePortrait ──
             "--expression-restorer-model", "live_portrait",
+            "--expression-restorer-factor", "80",
             # ── Execution ──
             "--execution-thread-count", "4",
             "--video-memory-strategy", "tolerant",
-            # ── Output: high quality encoding ──
+            # ── Output: maximum quality encoding ──
             "--output-video-encoder", "libx264",
-            "--output-video-quality", "85",
+            "--output-video-quality", "95",
+            "--output-video-preset", "slow",
             # ── Diagnostics ──
             "--log-level", "debug",
         ]
