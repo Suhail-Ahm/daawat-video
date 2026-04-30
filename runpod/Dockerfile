@@ -34,21 +34,54 @@ import onnxruntime; print('✅ onnxruntime', onnxruntime.__version__); \
 print('   Providers:', onnxruntime.get_available_providers()); \
 print('🎯 All imports OK!')"
 
-# ─── Pre-download models (zero cold-start) ───────────────────────────
-# Use --download-scope lite to avoid downloading ALL 95 models (build timeout)
-# This downloads only the essential models needed for face processing
-RUN python facefusion.py force-download --download-scope lite
+# ─── Pre-download ONLY essential face-swap models ─────────────────────
+# Instead of force-download (downloads 30+ models, causes build timeout),
+# we manually download only the 6 models needed for face swapping.
+# Source: https://github.com/facefusion/facefusion-assets
+
+# Create the model directories
+RUN mkdir -p /app/.assets/models
+
+# Base URL for facefusion-assets on GitHub
+ENV ASSETS_URL=https://github.com/facefusion/facefusion-assets/releases/download/models-3.6.0
+
+# 1. Face detector: retinaface (16MB)
+RUN wget -q --show-progress -O /app/.assets/models/retinaface_10g.onnx \
+    ${ASSETS_URL}/retinaface_10g.onnx
+
+# 2. Face landmarker: 2dfan4 (93MB) + peppa_wutz (13MB)
+RUN wget -q --show-progress -O /app/.assets/models/2dfan4.onnx \
+    ${ASSETS_URL}/2dfan4.onnx && \
+    wget -q --show-progress -O /app/.assets/models/peppa_wutz.onnx \
+    ${ASSETS_URL}/peppa_wutz.onnx
+
+# 3. Face recognizer: arcface (166MB)
+RUN wget -q --show-progress -O /app/.assets/models/arcface_w600k_r50.onnx \
+    ${ASSETS_URL}/arcface_w600k_r50.onnx
+
+# 4. Face masker: xseg (67MB)
+RUN wget -q --show-progress -O /app/.assets/models/xseg_1.onnx \
+    ${ASSETS_URL}/xseg_1.onnx
+
+# 5. Face swapper: inswapper_128_fp16 (the core swap model, ~200MB)
+RUN wget -q --show-progress -O /app/.assets/models/inswapper_128_fp16.onnx \
+    ${ASSETS_URL}/inswapper_128_fp16.onnx
+
+# 6. NSFW filter (required by FaceFusion to start)
+RUN wget -q --show-progress -O /app/.assets/models/nsfw_1.onnx \
+    ${ASSETS_URL}/nsfw_1.onnx
 
 # ─── Verify models ───────────────────────────────────────────────────
 RUN python -c "\
 import os, glob; \
-files = glob.glob('/app/.assets/**/*.onnx', recursive=True) + \
-        glob.glob('/app/.assets/**/*.dfm', recursive=True) + \
-        glob.glob('/app/.assets/**/*.hash', recursive=True); \
-onnx = [f for f in files if f.endswith('.onnx')]; \
-assert len(onnx) >= 2, f'Expected 2+ models, found {len(onnx)}'; \
-[print(f'✅ {os.path.basename(f)}: {os.path.getsize(f)/1024/1024:.1f}MB') for f in sorted(onnx)]; \
-print(f'🎯 {len(onnx)} models OK!')"
+files = glob.glob('/app/.assets/models/*.onnx'); \
+assert len(files) >= 5, f'Expected 5+ models, found {len(files)}'; \
+total = 0; \
+[( \
+    print(f'✅ {os.path.basename(f)}: {os.path.getsize(f)/1024/1024:.1f}MB'), \
+    total := total + os.path.getsize(f) \
+) for f in sorted(files)]; \
+print(f'🎯 {len(files)} models OK! Total: {total/1024/1024:.0f}MB')"
 
 # ─── Copy handler ────────────────────────────────────────────────────
 COPY runpod/handler.py /app/handler.py
