@@ -1,0 +1,137 @@
+{
+  "1": {
+    "class_type": "VHS_LoadVideo",
+    "inputs": {
+      "video": "/tmp/target.mp4",
+      "force_rate": 24,
+      "force_size": "Disabled",
+      "frame_load_cap": 0,
+      "skip_first_frames": 0,
+      "select_every_nth": 1
+    },
+    "_meta": {
+      "title": "Load Target Video"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "inputs": {
+      "image": "source.png"
+    },
+    "_meta": {
+      "title": "Load Source Selfie"
+    }
+  },
+  "3": {
+    "class_type": "SAM2AutoSegmentation",
+    "inputs": {
+      "model": "sam2_hiera_large.safetensors",
+      "images": ["1", 0],
+      "points_per_side": 32,
+      "points_per_batch": 64,
+      "pred_iou_thresh": 0.8,
+      "stability_score_thresh": 0.8,
+      "crop_n_layers": 0,
+      "min_mask_region_area": 2000
+    },
+    "_meta": {
+      "title": "SAM2 Segment Woman"
+    }
+  },
+  "4": {
+    "class_type": "SAM2VideoTracking",
+    "inputs": {
+      "model": "sam2_hiera_large.safetensors",
+      "images": ["1", 0],
+      "masks": ["3", 0],
+      "propagate_forward": true,
+      "propagate_backward": false
+    },
+    "_meta": {
+      "title": "SAM2 Track Woman Across Frames"
+    }
+  },
+  "5": {
+    "class_type": "CLIPVisionLoader",
+    "inputs": {
+      "clip_name": "clip-vit-h-14-laion2B-s32B-b79K.safetensors"
+    },
+    "_meta": {
+      "title": "Load CLIP Vision"
+    }
+  },
+  "6": {
+    "class_type": "CLIPVisionEncode",
+    "inputs": {
+      "clip_vision": ["5", 0],
+      "image": ["2", 0]
+    },
+    "_meta": {
+      "title": "Encode Source Face Identity"
+    }
+  },
+  "7": {
+    "class_type": "WanVideoModelLoader",
+    "inputs": {
+      "model": "wan2.2_animate_14B_fp8_e4m3fn.safetensors",
+      "precision": "fp8_e4m3fn"
+    },
+    "_meta": {
+      "title": "Load Wan 2.2 Animate-14B"
+    }
+  },
+  "8": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "wan2.2_vae.safetensors"
+    },
+    "_meta": {
+      "title": "Load Wan 2.2 VAE"
+    }
+  },
+  "9": {
+    "class_type": "WanVideoAnimate",
+    "inputs": {
+      "model": ["7", 0],
+      "clip_vision_output": ["6", 0],
+      "vae": ["8", 0],
+      "images": ["1", 0],
+      "mask": ["4", 0],
+      "reference_image": ["2", 0],
+      "width": 832,
+      "height": 480,
+      "steps": 25,
+      "cfg": 5.0,
+      "seed": -1,
+      "denoise": 0.85
+    },
+    "_meta": {
+      "title": "Wan 2.2 Animate — Character Replacement"
+    }
+  },
+  "10": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": ["9", 0],
+      "vae": ["8", 0]
+    },
+    "_meta": {
+      "title": "VAE Decode"
+    }
+  },
+  "11": {
+    "class_type": "VHS_VideoCombine",
+    "inputs": {
+      "images": ["10", 0],
+      "frame_rate": 24,
+      "loop_count": 0,
+      "filename_prefix": "charswap_output",
+      "format": "video/h264-mp4",
+      "quality": 95,
+      "save_output": true
+    },
+    "_meta": {
+      "title": "Save Output Video"
+    }
+  }
+}

@@ -1,9 +1,11 @@
 /**
  * RunPod Serverless API Client
- * Handles face swap jobs via FaceFusion on CUDA GPUs
+ * Handles both face swap (FaceFusion) and character swap (ComfyUI + Wan 2.2) jobs
  */
 
 const RUNPOD_BASE = "https://api.runpod.ai/v2";
+
+type SwapMode = "face" | "character";
 
 interface RunPodJobInput {
   source_url: string; // S3 URL to selfie
@@ -30,15 +32,50 @@ interface RunPodStatusResponse {
 }
 
 /**
- * Submit a face swap job to RunPod Serverless
+ * Get the correct RunPod endpoint ID based on swap mode
+ */
+function getEndpointId(swapMode: SwapMode): string {
+  const apiKey = process.env.RUNPOD_API_KEY;
+  if (!apiKey) throw new Error("RUNPOD_API_KEY is required");
+
+  if (swapMode === "character") {
+    const endpointId = process.env.RUNPOD_CHARSWAP_ENDPOINT_ID;
+    if (!endpointId) {
+      throw new Error("RUNPOD_CHARSWAP_ENDPOINT_ID is required for character swap");
+    }
+    return endpointId;
+  }
+
+  const endpointId = process.env.RUNPOD_ENDPOINT_ID;
+  if (!endpointId) {
+    throw new Error("RUNPOD_ENDPOINT_ID is required for face swap");
+  }
+  return endpointId;
+}
+
+/**
+ * Submit a face swap job to RunPod Serverless (FaceFusion)
  */
 export async function submitFaceSwapJob(input: RunPodJobInput): Promise<RunPodResponse> {
-  const endpointId = process.env.RUNPOD_ENDPOINT_ID;
-  const apiKey = process.env.RUNPOD_API_KEY;
+  return submitSwapJob(input, "face");
+}
 
-  if (!endpointId || !apiKey) {
-    throw new Error("RUNPOD_ENDPOINT_ID and RUNPOD_API_KEY are required");
-  }
+/**
+ * Submit a character swap job to RunPod Serverless (ComfyUI + Wan 2.2)
+ */
+export async function submitCharacterSwapJob(input: RunPodJobInput): Promise<RunPodResponse> {
+  return submitSwapJob(input, "character");
+}
+
+/**
+ * Internal: Submit a swap job to the correct RunPod endpoint
+ */
+async function submitSwapJob(input: RunPodJobInput, swapMode: SwapMode): Promise<RunPodResponse> {
+  const endpointId = getEndpointId(swapMode);
+  const apiKey = process.env.RUNPOD_API_KEY!;
+
+  // Character swap gets a longer timeout (10 min vs 5 min)
+  const timeoutMs = swapMode === "character" ? 600000 : 300000;
 
   const res = await fetch(`${RUNPOD_BASE}/${endpointId}/run`, {
     method: "POST",
@@ -54,7 +91,7 @@ export async function submitFaceSwapJob(input: RunPodJobInput): Promise<RunPodRe
         gender: input.gender || "female",
       },
       policy: {
-        executionTimeout: 600000, // 10 min max
+        executionTimeout: timeoutMs,
       },
     }),
   });
@@ -68,11 +105,11 @@ export async function submitFaceSwapJob(input: RunPodJobInput): Promise<RunPodRe
 }
 
 /**
- * Check the status of a RunPod job
+ * Check the status of a RunPod job (works for both swap modes)
  */
-export async function checkFaceSwapStatus(jobId: string): Promise<RunPodStatusResponse> {
-  const endpointId = process.env.RUNPOD_ENDPOINT_ID;
-  const apiKey = process.env.RUNPOD_API_KEY;
+export async function checkSwapStatus(jobId: string, swapMode: SwapMode = "face"): Promise<RunPodStatusResponse> {
+  const endpointId = getEndpointId(swapMode);
+  const apiKey = process.env.RUNPOD_API_KEY!;
 
   const res = await fetch(`${RUNPOD_BASE}/${endpointId}/status/${jobId}`, {
     headers: { Authorization: `Bearer ${apiKey}` },
@@ -86,25 +123,44 @@ export async function checkFaceSwapStatus(jobId: string): Promise<RunPodStatusRe
 }
 
 /**
+ * @deprecated Use checkSwapStatus instead
+ */
+export async function checkFaceSwapStatus(jobId: string): Promise<RunPodStatusResponse> {
+  return checkSwapStatus(jobId, "face");
+}
+
+/**
  * Poll until a RunPod job completes (with timeout)
  */
-export async function waitForFaceSwap(
+export async function waitForSwap(
   jobId: string,
+  swapMode: SwapMode = "face",
   maxWaitMs = 600000,
   pollIntervalMs = 5000
 ): Promise<RunPodStatusResponse> {
   const start = Date.now();
 
   while (Date.now() - start < maxWaitMs) {
-    const status = await checkFaceSwapStatus(jobId);
+    const status = await checkSwapStatus(jobId, swapMode);
 
     if (status.status === "COMPLETED") return status;
     if (status.status === "FAILED" || status.status === "CANCELLED") {
-      throw new Error(`Face swap failed: ${status.error || JSON.stringify(status.output)}`);
+      throw new Error(`Swap failed: ${status.error || JSON.stringify(status.output)}`);
     }
 
     await new Promise((r) => setTimeout(r, pollIntervalMs));
   }
 
-  throw new Error(`Face swap timed out after ${maxWaitMs / 1000}s`);
+  throw new Error(`Swap timed out after ${maxWaitMs / 1000}s`);
+}
+
+/**
+ * @deprecated Use waitForSwap instead
+ */
+export async function waitForFaceSwap(
+  jobId: string,
+  maxWaitMs = 600000,
+  pollIntervalMs = 5000
+): Promise<RunPodStatusResponse> {
+  return waitForSwap(jobId, "face", maxWaitMs, pollIntervalMs);
 }

@@ -15,6 +15,7 @@ export async function POST(req: NextRequest) {
     const name = formData.get("name") as string;
     const phone = formData.get("phone") as string;
     const selfie = formData.get("selfie") as File;
+    const swapMode = (formData.get("swapMode") as string) || "face";
 
     // Validate
     if (!name?.trim()) {
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
       data: {
         userId: user.id,
         selfieS3Key: selfieKey,
+        swapMode: swapMode === "character" ? "character" : "face",
         status: "pending",
         progress: 0,
       },

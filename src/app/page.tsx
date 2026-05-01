@@ -57,6 +57,7 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [selfie, setSelfie] = useState<File | null>(null);
+  const [swapMode, setSwapMode] = useState<"face" | "character">("face");
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -80,7 +81,7 @@ export default function HomePage() {
     if (!name.trim() || !phone.trim() || !selfie) { setError("Please fill all fields and upload your selfie."); return; }
     setLoading(true);
     try {
-      const fd = new FormData(); fd.append("name", name.trim()); fd.append("phone", phone.trim()); fd.append("selfie", selfie);
+      const fd = new FormData(); fd.append("name", name.trim()); fd.append("phone", phone.trim()); fd.append("selfie", selfie); fd.append("swapMode", swapMode);
       const res = await fetch("/api/submit", { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Something went wrong"); return; }
@@ -186,6 +187,32 @@ export default function HomePage() {
                         </div>
                       )}
                       <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handleFileChange} className="hidden" />
+                    </div>
+                  </div>
+
+                  {/* Swap Mode Toggle */}
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-medium text-zinc-500 uppercase tracking-wider">Experience</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button type="button" onClick={() => setSwapMode("face")}
+                        className={`relative rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                          swapMode === "face"
+                            ? "border-[#e4b573] bg-[#f0ebe0]/60 ring-1 ring-[#e4b573]/30"
+                            : "border-zinc-200 bg-zinc-50/50 hover:border-zinc-300"
+                        }`}>
+                        <p className="text-sm font-medium text-zinc-800">🎭 Face Swap</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">Fast · ~2 min</p>
+                      </button>
+                      <button type="button" onClick={() => setSwapMode("character")}
+                        className={`relative rounded-xl border p-3 text-left transition-all cursor-pointer ${
+                          swapMode === "character"
+                            ? "border-[#002e82] bg-[#002e82]/5 ring-1 ring-[#002e82]/30"
+                            : "border-zinc-200 bg-zinc-50/50 hover:border-zinc-300"
+                        }`}>
+                        <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#002e82] to-[#1a4a99] text-white">Premium</span>
+                        <p className="text-sm font-medium text-zinc-800">✨ Character Swap</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">HD · ~8 min</p>
+                      </button>
                     </div>
                   </div>
 

@@ -5,7 +5,7 @@
 
 import { db } from "./db";
 import { streamUploadToS3, getPresignedUploadUrl, getPresignedDownloadUrl } from "./s3";
-import { submitFaceSwapJob, waitForFaceSwap } from "./runpod";
+import { submitFaceSwapJob, submitCharacterSwapJob, waitForSwap } from "./runpod";
 import { generatePersonalizedAudio, mergeAudioIntoVideo } from "./audio-pipeline";
 import fs from "fs";
 import path from "path";
@@ -71,10 +71,12 @@ export async function processVideoJob(jobId: string) {
   };
 
   try {
-    // ─── Step 1: Face Swap via RunPod ────────────────────────────────────
-    const step1 = startStep(timings, "face_swapping", "Face Swap");
+    // ─── Step 1: Face/Character Swap via RunPod ──────────────────────────
+    const swapMode = (job.swapMode as "face" | "character") || "face";
+    const swapLabel = swapMode === "character" ? "Character Swap" : "Face Swap";
+    const step1 = startStep(timings, "face_swapping", swapLabel);
     await updateJob(jobId, { status: "face_swapping", progress: 10, stepTimings: timings });
-    console.log(`\n🎭 Step 1: Face swap for job ${jobId}`);
+    console.log(`\n🎭 Step 1: ${swapLabel} for job ${jobId}`);
 
     const swappedKey = `outputs/swapped_${jobId}.mp4`;
     const uploadUrl = await getPresignedUploadUrl(swappedKey, "video/mp4");
@@ -82,7 +84,8 @@ export async function processVideoJob(jobId: string) {
     const sourceUrl = await getPresignedDownloadUrl(job.selfieS3Key);
     const templateUrl = await getPresignedDownloadUrl(process.env.TEMPLATE_VIDEO_S3_KEY || "assets/template.mp4");
 
-    const runpodJob = await submitFaceSwapJob({
+    const submitFn = swapMode === "character" ? submitCharacterSwapJob : submitFaceSwapJob;
+    const runpodJob = await submitFn({
       source_url: sourceUrl,
       target_url: templateUrl,
       upload_url: uploadUrl,
@@ -90,13 +93,13 @@ export async function processVideoJob(jobId: string) {
     });
 
     await updateJob(jobId, { runpodJobId: runpodJob.id, progress: 20, stepTimings: timings });
-    console.log(`  ▸ RunPod job submitted: ${runpodJob.id}`);
+    console.log(`  ▸ RunPod job submitted: ${runpodJob.id} (${swapLabel})`);
 
     // Poll until complete
-    const result = await waitForFaceSwap(runpodJob.id);
+    const result = await waitForSwap(runpodJob.id, swapMode);
     endStep(step1);
     await updateJob(jobId, { swappedVideoKey: swappedKey, progress: 60, stepTimings: timings });
-    console.log(`  ✅ Face swap done in ${step1.durationLabel} (worker: ${result.output?.elapsed?.toFixed(1)}s)`);
+    console.log(`  ✅ ${swapLabel} done in ${step1.durationLabel} (worker: ${result.output?.elapsed?.toFixed(1)}s)`);
 
     // ─── Step 2: Audio Personalization ───────────────────────────────────
     const step2 = startStep(timings, "audio_processing", "Audio Personalization");

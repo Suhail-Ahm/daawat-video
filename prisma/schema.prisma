@@ -20,6 +20,7 @@ model Job {
   userId          String
   user            User     @relation(fields: [userId], references: [id])
   status          String   @default("pending")
+  swapMode        String   @default("face")  // "face" | "character"
   runpodJobId     String?
   selfieS3Key     String
   swappedVideoKey String?
