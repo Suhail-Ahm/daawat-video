@@ -18,8 +18,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 # ─── System deps (Ubuntu 22.04 ships Python 3.10) ────────────────────
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3 python3-pip \
+        python3 python3-pip python3-dev \
         git wget ffmpeg \
+        g++ \
         libsm6 libxext6 libgl1 libglib2.0-0 \
     && ln -sf /usr/bin/python3 /usr/bin/python \
     && apt-get clean \
