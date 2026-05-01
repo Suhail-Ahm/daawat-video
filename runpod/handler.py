@@ -103,15 +103,15 @@ def handler(event):
             "--face-selector-gender", gender,
             # ── Face masking: box + occlusion for natural blending ──
             "--face-mask-types", "box", "occlusion",
-            "--face-mask-blur", "0.3",
-            "--face-mask-padding", "1", "1", "1", "1",
+            "--face-mask-blur", "0.5",
+            "--face-mask-padding", "2", "2", "2", "2",
             # ── Face swapper: hyperswap_1c_256 + 768x pixel boost ──
             "--face-swapper-model", "hyperswap_1c_256",
             "--face-swapper-pixel-boost", "768x768",
             # ── Face enhancer: GFPGAN 1.4 — reduced blend for natural look ──
             "--face-enhancer-model", "gfpgan_1.4",
-            "--face-enhancer-blend", "65",
-            "--face-enhancer-weight", "0.6",
+            "--face-enhancer-blend", "40",
+            "--face-enhancer-weight", "0.35",
             # ── Expression restorer: LivePortrait ──
             "--expression-restorer-model", "live_portrait",
             "--expression-restorer-factor", "80",
