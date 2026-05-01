@@ -32,11 +32,19 @@ from src.config.argument_config import ArgumentConfig
 from src.config.inference_config import InferenceConfig
 from src.config.crop_config import CropConfig
 from src.live_portrait_pipeline import LivePortraitPipeline
-from src.utils.helper import partial_fields
+
+
+# ─── partial_fields: filter kwargs to only fields the dataclass accepts ──
+# This was in inference.py, NOT in src.utils.helper (despite what the PDF said)
+def partial_fields(target_class, kwargs):
+    return target_class(**{k: v for k, v in kwargs.items() if hasattr(target_class, k)})
+
 
 # ─── Load models ONCE on worker boot ─────────────────────────────────
 MODEL_DIR = os.environ.get("LIVEPORTRAIT_MODEL_DIR", "/runpod-volume/pretrained_weights/liveportrait")
+INSIGHTFACE_DIR = os.environ.get("INSIGHTFACE_MODEL_DIR", "/runpod-volume/pretrained_weights/insightface")
 
+# Build configs from default ArgumentConfig
 _default_args = ArgumentConfig()
 _default_args.flag_pasteback = True
 _default_args.flag_stitching = True
@@ -46,16 +54,25 @@ _default_args.flag_crop_driving_video = True
 inference_cfg = partial_fields(InferenceConfig, _default_args.__dict__)
 crop_cfg = partial_fields(CropConfig, _default_args.__dict__)
 
-# Override checkpoint paths to point at the network volume
+# Override checkpoint paths → network volume
+# InferenceConfig checkpoints (verified from inference_config.py)
 inference_cfg.checkpoint_F = f"{MODEL_DIR}/base_models/appearance_feature_extractor.pth"
 inference_cfg.checkpoint_M = f"{MODEL_DIR}/base_models/motion_extractor.pth"
 inference_cfg.checkpoint_W = f"{MODEL_DIR}/base_models/warping_module.pth"
 inference_cfg.checkpoint_G = f"{MODEL_DIR}/base_models/spade_generator.pth"
-inference_cfg.checkpoint_S = (
-    f"{MODEL_DIR}/retargeting_models/stitching_retargeting_module.pth"
-)
+inference_cfg.checkpoint_S = f"{MODEL_DIR}/retargeting_models/stitching_retargeting_module.pth"
+
+# CropConfig paths (verified from crop_config.py) — these default to
+# relative paths that won't exist in the container
+crop_cfg.insightface_root = INSIGHTFACE_DIR
+crop_cfg.landmark_ckpt_path = f"{MODEL_DIR}/landmark.onnx"
 
 print("[boot] Initializing LivePortrait pipeline...")
+print(f"  Model dir: {MODEL_DIR}")
+print(f"  InsightFace dir: {INSIGHTFACE_DIR}")
+print(f"  Landmark: {crop_cfg.landmark_ckpt_path}")
+print(f"  Checkpoint F: {inference_cfg.checkpoint_F}")
+
 pipeline = LivePortraitPipeline(inference_cfg=inference_cfg, crop_cfg=crop_cfg)
 print("[boot] Ready.")
 
@@ -130,29 +147,32 @@ def handler(event):
         args.flag_relative_motion = True
         args.flag_crop_driving_video = True
 
-        pipeline.execute(args)
-
-        # ── Step 3: Find output video ──
-        videos = sorted(out_dir.rglob("*.mp4"))
-        if not videos:
-            return {"status": "error", "error": "No output video produced"}
-
-        # Prefer the pasted-back full-frame output (not the concat/debug version)
-        paste_videos = [
-            v for v in videos
-            if "_concat" not in v.name and "paste" in v.name.lower()
-        ] or videos
-        final_video = paste_videos[0]
+        # pipeline.execute returns (wfp, wfp_concat)
+        wfp, wfp_concat = pipeline.execute(args)
 
         elapsed = time.time() - start
+
+        # Use the main output (wfp) — this is the pasteback version
+        final_video = wfp
+        if not os.path.exists(final_video):
+            # Fallback: search for any mp4
+            videos = sorted(out_dir.rglob("*.mp4"))
+            if not videos:
+                return {"status": "error", "error": "No output video produced"}
+            # Prefer non-concat version
+            paste_videos = [
+                v for v in videos if "_concat" not in v.name
+            ] or videos
+            final_video = str(paste_videos[0])
+
         output_size = os.path.getsize(final_video) / 1024 / 1024
-        print(f"  Output: {final_video.name} ({output_size:.1f} MB)")
+        print(f"  Output: {final_video} ({output_size:.1f} MB)")
         print(f"  Pipeline completed in {elapsed:.1f}s")
 
-        # ── Step 4: Upload to S3 ──
+        # ── Step 3: Upload to S3 ──
         if upload_url:
             print("Uploading result to S3...")
-            upload_file(str(final_video), upload_url)
+            upload_file(final_video, upload_url)
 
         return {
             "status": "success",
