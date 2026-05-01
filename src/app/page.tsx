@@ -209,9 +209,9 @@ export default function HomePage() {
                             ? "border-[#002e82] bg-[#002e82]/5 ring-1 ring-[#002e82]/30"
                             : "border-zinc-200 bg-zinc-50/50 hover:border-zinc-300"
                         }`}>
-                        <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#002e82] to-[#1a4a99] text-white">Premium</span>
-                        <p className="text-sm font-medium text-zinc-800">✨ Character Swap</p>
-                        <p className="text-[10px] text-zinc-400 mt-0.5">HD · ~8 min</p>
+                        <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#002e82] to-[#1a4a99] text-white">New</span>
+                        <p className="text-sm font-medium text-zinc-800">✨ Face Animation</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">Natural · ~1 min</p>
                       </button>
                     </div>
                   </div>
