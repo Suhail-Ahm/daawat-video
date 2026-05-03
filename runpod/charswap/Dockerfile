@@ -34,17 +34,14 @@ RUN cd /comfyui/custom_nodes && \
     pip install -r requirements.txt || true
 
 # ─── Model path config → network volume ──────────────────────────────
-# Write extra_model_paths.yaml inline (avoids COPY context issues)
-RUN cat > /comfyui/extra_model_paths.yaml << 'EOF'
-runpod_volume:
-  base_path: /runpod-volume/comfyui/models/
-  diffusion_models: diffusion_models/
-  text_encoders: text_encoders/
-  vae: vae/
-  clip_vision: clip_vision/
-  checkpoints: checkpoints/
-  loras: loras/
-EOF
+RUN printf 'runpod_volume:\n\
+  base_path: /runpod-volume/comfyui/models/\n\
+  diffusion_models: diffusion_models/\n\
+  text_encoders: text_encoders/\n\
+  vae: vae/\n\
+  clip_vision: clip_vision/\n\
+  checkpoints: checkpoints/\n\
+  loras: loras/\n' > /comfyui/extra_model_paths.yaml
 
 # ─── Build-time sanity check ─────────────────────────────────────────
 RUN python -c "import comfy; print('[build] ComfyUI imports OK')" || true
