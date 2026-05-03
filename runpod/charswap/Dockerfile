@@ -14,6 +14,10 @@ FROM runpod/worker-comfyui:5.8.4-base
 
 LABEL org.opencontainers.image.source="https://github.com/Suhail-Ahm/daawat-video"
 
+# ─── Bypass CUDA version check ───────────────────────────────────────
+# US-TX-3 workers have CUDA 12.4 drivers; base image expects >=12.6
+ENV NVIDIA_DISABLE_REQUIRE=1
+
 # ─── Install Wan 2.2 Animate custom nodes ────────────────────────────
 # These provide the WanAnimate nodes for character replacement
 RUN cd /comfyui/custom_nodes && \
