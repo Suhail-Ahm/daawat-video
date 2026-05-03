@@ -10,7 +10,7 @@
 #   /runpod-volume/comfyui/models/vae/               → Wan 2.1 VAE
 # ═══════════════════════════════════════════════════════════════════════
 
-FROM runpod/worker-comfyui:3.4.1-base
+FROM runpod/worker-comfyui:5.8.4-base
 
 LABEL org.opencontainers.image.source="https://github.com/Suhail-Ahm/daawat-video"
 
