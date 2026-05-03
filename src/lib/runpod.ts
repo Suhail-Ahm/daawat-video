@@ -1,6 +1,6 @@
 /**
  * RunPod Serverless API Client
- * Handles both face swap (FaceFusion) and character swap (ComfyUI + Wan 2.2) jobs
+ * Handles both face swap (FaceFusion) and character swap (Wan 2.2 Animate) jobs
  */
 
 const RUNPOD_BASE = "https://api.runpod.ai/v2";
@@ -61,7 +61,7 @@ export async function submitFaceSwapJob(input: RunPodJobInput): Promise<RunPodRe
 }
 
 /**
- * Submit a character swap job to RunPod Serverless (ComfyUI + Wan 2.2)
+ * Submit a character swap job to RunPod Serverless (Wan 2.2 Animate)
  */
 export async function submitCharacterSwapJob(input: RunPodJobInput): Promise<RunPodResponse> {
   return submitSwapJob(input, "character");

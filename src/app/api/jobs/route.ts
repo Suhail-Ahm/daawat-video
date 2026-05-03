@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
       id: j.id,
       userName: j.user.name,
       userPhone: j.user.phone,
+      swapMode: j.swapMode || "face",
       status: j.status,
       progress: j.progress,
       runpodJobId: j.runpodJobId,

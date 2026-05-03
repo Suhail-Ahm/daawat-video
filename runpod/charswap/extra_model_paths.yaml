@@ -1,0 +1,13 @@
+# ═══════════════════════════════════════════════════════════════════════
+# Extra model paths — points ComfyUI at the RunPod network volume
+# Mount the volume at /runpod-volume when creating the endpoint
+# ═══════════════════════════════════════════════════════════════════════
+
+runpod_volume:
+  base_path: /runpod-volume/comfyui/models/
+  diffusion_models: diffusion_models/
+  text_encoders: text_encoders/
+  vae: vae/
+  clip_vision: clip_vision/
+  checkpoints: checkpoints/
+  loras: loras/

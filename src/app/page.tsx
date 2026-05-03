@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 interface StepTiming { step: string; label: string; durationMs?: number; durationLabel?: string; }
 interface PipelineTimings { totalDurationMs?: number; totalDurationLabel?: string; steps: StepTiming[]; }
 interface JobRecord {
-  id: string; userName: string; userPhone: string; status: string; progress: number;
+  id: string; userName: string; userPhone: string; swapMode: string; status: string; progress: number;
   runpodJobId: string | null; errorMessage: string | null; stepTimings: PipelineTimings | null;
   createdAt: string; updatedAt: string; finalVideoUrl: string | null;
 }
@@ -210,8 +210,8 @@ export default function HomePage() {
                             : "border-zinc-200 bg-zinc-50/50 hover:border-zinc-300"
                         }`}>
                         <span className="absolute top-1.5 right-1.5 text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-gradient-to-r from-[#002e82] to-[#1a4a99] text-white">New</span>
-                        <p className="text-sm font-medium text-zinc-800">✨ Face Animation</p>
-                        <p className="text-[10px] text-zinc-400 mt-0.5">Natural · ~1 min</p>
+                        <p className="text-sm font-medium text-zinc-800">✨ Character Swap</p>
+                        <p className="text-[10px] text-zinc-400 mt-0.5">Premium · ~5 min</p>
                       </button>
                     </div>
                   </div>
@@ -274,7 +274,7 @@ export default function HomePage() {
               <div className="divide-y divide-zinc-100">
                 {jobsData.jobs.map((job) => (
                   <JobRow key={job.id} job={job} statusInfo={STATUS_MAP[job.status] || STATUS_MAP.pending}
-                    isExpanded={expandedJob === job.id} onToggle={() => setExpandedJob(expandedJob === job.id ? null : job.id)} />
+                    isExpanded={expandedJob === job.id} onToggle={() => setExpandedJob(expandedJob === job.id ? null : job.id)} onRetry={fetchJobs} />
                 ))}
               </div>
             </div>
@@ -299,11 +299,33 @@ function MetricCard({ label, value, accent, isText }: { label: string; value: nu
 
 /* ─── Job Row ─────────────────────────────────────────────────────── */
 
-function JobRow({ job, statusInfo, isExpanded, onToggle }: {
-  job: JobRecord; statusInfo: { label: string; color: string; dotColor: string }; isExpanded: boolean; onToggle: () => void;
+function JobRow({ job, statusInfo, isExpanded, onToggle, onRetry }: {
+  job: JobRecord; statusInfo: { label: string; color: string; dotColor: string }; isExpanded: boolean; onToggle: () => void; onRetry: () => void;
 }) {
   const timings = job.stepTimings;
   const isActive = ["pending", "face_swapping", "audio_processing", "merging"].includes(job.status);
+  const [retrying, setRetrying] = useState(false);
+  const router = useRouter();
+
+  const modeBadge = job.swapMode === "character"
+    ? { label: "Character", bg: "bg-[#002e82]/10", text: "text-[#002e82]" }
+    : { label: "Face Swap", bg: "bg-[#e4b573]/20", text: "text-[#8b6914]" };
+
+  const handleRetry = async (mode?: "face" | "character") => {
+    setRetrying(true);
+    try {
+      const res = await fetch(`/api/retry/${job.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mode ? { swapMode: mode } : {}),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        onRetry();
+        router.push(`/status/${data.jobId}`);
+      }
+    } catch { /* ignore */ } finally { setRetrying(false); }
+  };
 
   return (
     <>
@@ -313,7 +335,10 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
             {job.userName.charAt(0).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-medium text-zinc-800 truncate">{job.userName}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-sm font-medium text-zinc-800 truncate">{job.userName}</p>
+              <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full ${modeBadge.bg} ${modeBadge.text}`}>{modeBadge.label}</span>
+            </div>
             <p className="text-[10px] text-zinc-400 truncate sm:hidden">{statusInfo.label} · {timings?.totalDurationLabel || "—"}</p>
           </div>
         </div>
@@ -330,6 +355,12 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
             <a href={job.finalVideoUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-emerald-600 hover:text-emerald-500 transition-colors">▶</a>
           )}
           {isActive && <a href={`/status/${job.id}`} onClick={(e) => e.stopPropagation()} className="text-[10px] font-medium text-[#002e82] hover:text-[#1a4a99] transition-colors">→</a>}
+          {job.status === "error" && (
+            <button onClick={(e) => { e.stopPropagation(); handleRetry(); }} disabled={retrying}
+              className="text-[10px] font-medium text-amber-600 hover:text-amber-500 transition-colors disabled:opacity-50">
+              {retrying ? "..." : "↻"}
+            </button>
+          )}
           <span className={`text-zinc-300 text-[10px] transition-transform ${isExpanded ? "rotate-180" : ""}`}>▾</span>
         </div>
       </div>
@@ -342,10 +373,25 @@ function JobRow({ job, statusInfo, isExpanded, onToggle }: {
               <div className="space-y-1.5 text-[11px]">
                 <InfoRow label="Job ID" value={job.id} mono />
                 <InfoRow label="RunPod" value={job.runpodJobId || "—"} mono />
+                <InfoRow label="Mode" value={job.swapMode === "character" ? "✨ Character Swap" : "🎭 Face Swap"} />
                 <InfoRow label="Progress" value={`${job.progress}%`} />
                 <InfoRow label="Created" value={new Date(job.createdAt).toLocaleString()} />
               </div>
               {job.errorMessage && <div className="rounded-lg border border-red-200 bg-red-50 p-2 text-[10px] text-red-600 break-all">{job.errorMessage}</div>}
+
+              {/* ── Retry Buttons for failed jobs ── */}
+              {job.status === "error" && (
+                <div className="flex gap-2 pt-1">
+                  <button onClick={() => handleRetry(job.swapMode as "face" | "character")} disabled={retrying}
+                    className="flex-1 text-[10px] font-semibold px-3 py-2 rounded-lg bg-gradient-to-r from-[#002e82] to-[#1a4a99] text-white hover:opacity-90 transition-opacity disabled:opacity-50">
+                    {retrying ? "Retrying..." : `↻ Retry (${job.swapMode === "character" ? "Character" : "Face Swap"})`}
+                  </button>
+                  <button onClick={() => handleRetry(job.swapMode === "character" ? "face" : "character")} disabled={retrying}
+                    className="text-[10px] font-medium px-3 py-2 rounded-lg border border-zinc-200 text-zinc-500 hover:border-[#e4b573] hover:text-[#002e82] transition-colors disabled:opacity-50">
+                    Try {job.swapMode === "character" ? "Face Swap" : "Character"}
+                  </button>
+                </div>
+              )}
             </div>
             <div className="space-y-2.5">
               <h4 className="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Step Timings</h4>
