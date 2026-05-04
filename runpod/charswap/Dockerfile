@@ -32,6 +32,7 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender1 \
     ffmpeg \
+    openssh-server \
     && apt-get autoremove -y && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/* \
     && ln -sf /usr/bin/python3 /usr/bin/python
@@ -60,16 +61,30 @@ RUN printf 'runpod_volume:\n\
 
 WORKDIR /
 
-# ─── RunPod handler ──────────────────────────────────────────────────
+# ─── RunPod handler + scripts ────────────────────────────────────────
 RUN pip install runpod requests websocket-client
 
-# Clone the worker-comfyui handler files
+# Clone the full worker-comfyui repo and copy ALL required files
 RUN git clone --depth 1 https://github.com/runpod-workers/worker-comfyui.git /tmp/worker \
     && cp /tmp/worker/handler.py /handler.py \
     && cp /tmp/worker/src/start.sh /start.sh \
     && cp /tmp/worker/src/network_volume.py /network_volume.py \
-    && chmod +x /start.sh \
+    && cp /tmp/worker/src/extra_model_paths.yaml /comfyui/extra_model_paths.yaml.default \
+    && mkdir -p /usr/local/bin \
+    && cp /tmp/worker/scripts/comfy-manager-set-mode.sh /usr/local/bin/comfy-manager-set-mode \
+    && cp /tmp/worker/scripts/comfy-node-install.sh /usr/local/bin/comfy-node-install \
+    && chmod +x /start.sh /usr/local/bin/comfy-manager-set-mode /usr/local/bin/comfy-node-install \
     && rm -rf /tmp/worker
+
+# Restore our custom extra_model_paths (overwrite the default)
+RUN printf 'runpod_volume:\n\
+  base_path: /runpod-volume/comfyui/models/\n\
+  diffusion_models: diffusion_models/\n\
+  text_encoders: text_encoders/\n\
+  vae: vae/\n\
+  clip_vision: clip_vision/\n\
+  checkpoints: checkpoints/\n\
+  loras: loras/\n' > /comfyui/extra_model_paths.yaml
 
 # ─── Install Wan 2.2 custom nodes ───────────────────────────────────
 RUN cd /comfyui/custom_nodes && \
