@@ -98,20 +98,20 @@ def handler(event):
             # ── Processors: swap → enhance → restore expressions ──
             "--processors", "face_swapper", "face_enhancer", "expression_restorer",
             "--execution-providers", "cuda",
-            # ── Face detection ──
-            "--face-selector-mode", "many",
+            # ── Face detection — swap only the most prominent matching face ──
+            "--face-selector-mode", "one",
             "--face-selector-gender", gender,
-            # ── Face masking: box + occlusion for natural blending ──
-            "--face-mask-types", "box", "occlusion",
-            "--face-mask-blur", "0.5",
-            "--face-mask-padding", "2", "2", "2", "2",
-            # ── Face swapper: hyperswap_1c_256 + 768x pixel boost ──
+            # ── Face masking: region + occlusion for contour-following blending ──
+            "--face-mask-types", "region", "occlusion",
+            "--face-mask-blur", "0.3",
+            "--face-mask-padding", "4", "8", "4", "4",
+            # ── Face swapper: hyperswap_1c_256 (best identity fidelity) ──
             "--face-swapper-model", "hyperswap_1c_256",
-            "--face-swapper-pixel-boost", "768x768",
-            # ── Face enhancer: GFPGAN 1.4 — reduced blend for natural look ──
+            "--face-swapper-pixel-boost", "512x512",
+            # ── Face enhancer: GFPGAN 1.4 — higher blend for sharper detail ──
             "--face-enhancer-model", "gfpgan_1.4",
-            "--face-enhancer-blend", "40",
-            "--face-enhancer-weight", "0.35",
+            "--face-enhancer-blend", "60",
+            "--face-enhancer-weight", "0.5",
             # ── Expression restorer: LivePortrait ──
             "--expression-restorer-model", "live_portrait",
             "--expression-restorer-factor", "80",
